@@ -7,6 +7,7 @@ import { ThreeCubeComponent } from './three-cube/three-cube.component';
 import { ThreeObjComponent } from './three-obj/three-obj.component';
 import { ThreeGlbComponent } from './three-glb/three-glb.component';
 import { ThreeAnimationAndTextureComponent } from './three-animation-and-texture/three-animation-and-texture.component';
+import { ArImgDetectComponent } from './ar-img-detect/ar-img-detect.component';
 
 @NgModule({
   declarations: [
@@ -14,7 +15,8 @@ import { ThreeAnimationAndTextureComponent } from './three-animation-and-texture
     ThreeCubeComponent,
     ThreeObjComponent,
     ThreeGlbComponent,
-    ThreeAnimationAndTextureComponent
+    ThreeAnimationAndTextureComponent,
+    ArImgDetectComponent
   ],
   imports: [
     BrowserModule,
