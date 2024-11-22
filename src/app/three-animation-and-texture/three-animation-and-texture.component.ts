@@ -1,14 +1,22 @@
-import { Component, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import * as THREE from 'three';
+import { AudioListener, PositionalAudio } from 'three';
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { AnimationMixer, AudioListener, PositionalAudio } from 'three';
 
 @Component({
   selector: 'app-three-animation-and-texture',
   templateUrl: './three-animation-and-texture.component.html',
-  styleUrls: ['./three-animation-and-texture.component.scss']
+  styleUrls: ['./three-animation-and-texture.component.scss'],
 })
-export class ThreeAnimationAndTextureComponent  implements OnDestroy, AfterViewInit {
+export class ThreeAnimationAndTextureComponent
+  implements OnDestroy, AfterViewInit
+{
   @ViewChild('canvas') canvasRef!: ElementRef;
   private renderer!: THREE.WebGLRenderer;
   private scene!: THREE.Scene;
@@ -19,7 +27,7 @@ export class ThreeAnimationAndTextureComponent  implements OnDestroy, AfterViewI
   private audioListener!: AudioListener;
   private positionalAudio!: PositionalAudio;
 
-  constructor() { }
+  constructor() {}
 
   ngAfterViewInit(): void {
     this.initThreeJS();
@@ -38,7 +46,12 @@ export class ThreeAnimationAndTextureComponent  implements OnDestroy, AfterViewI
     this.scene.background = new THREE.Color(0xeeeeee);
 
     // Configurar a câmera
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
     this.camera.position.set(0, 2, 5); // Ajustar conforme necessário para sua cena
 
     // Configurar o renderizador
@@ -55,41 +68,51 @@ export class ThreeAnimationAndTextureComponent  implements OnDestroy, AfterViewI
     // Antonio maria
     // loader.load('assets/3d/antonio-maria/antonio maria6 - ninguem me ama.glb', (gltf) => {
     // loader.load('assets/3d/antonio-maria/antonio maria5 - cafe com leite.glb', (gltf) => {
-      
-    loader.load('assets/3d/antonio-maria/antonio maria5 - cafe com leite.glb', (gltf) => {
-      console.log(gltf.scene)
-    });
 
-    loader.load('assets/3d/ascenso/ascenso_trem-de-alagoas_lite.glb', (gltf: GLTF) => {
-      console.log(gltf.scene)
-    });
+    loader.load(
+      'assets/3d/antonio-maria/antonio maria5 - cafe com leite.glb',
+      (gltf) => {
+        console.log(gltf.scene);
+      }
+    );
 
+    loader.load(
+      'assets/3d/ascenso/ascenso_trem-de-alagoas_lite.glb',
+      (gltf: GLTF) => {
+        console.log(gltf.scene);
+      }
+    );
 
     // Ascenso
-    loader.load('assets/3d/ascenso/ascenso_trem-de-alagoas_lite.glb', (gltf: GLTF) => {
-    // loader.load('assets/3d/ascenso/ascenso_5-maracatu_lite.glb', (gltf) => {
+    loader.load(
+      'assets/3d/ascenso/ascenso_trem-de-alagoas_lite.glb',
+      (gltf: GLTF) => {
+        // loader.load('assets/3d/ascenso/ascenso_5-maracatu_lite.glb', (gltf) => {
 
-    // Monkey
-    // loader.load('assets/test/animation-and-texture/macaco-teste.glb', (gltf) => {
-      this.model = gltf.scene;
-      this.model.scale.set(3, 3, 3);
-      this.model.rotateY(3);
+        // Monkey
+        // loader.load('assets/test/animation-and-texture/macaco-teste.glb', (gltf) => {
+        this.model = gltf.scene;
+        this.model.scale.set(3, 3, 3);
+        this.model.rotateY(3);
 
-      this.scene.add(this.model);
+        this.scene.add(this.model);
 
-      // Verificar se há animações no arquivo .glb
-      if (gltf.animations && gltf.animations.length > 0) {
-        this.mixer = new THREE.AnimationMixer(this.model);
-        gltf.animations.forEach((clip) => {
-          const action = this.mixer.clipAction(clip);
-          action.play(); // Iniciar a animação
-        });
+        // Verificar se há animações no arquivo .glb
+        if (gltf.animations && gltf.animations.length > 0) {
+          this.mixer = new THREE.AnimationMixer(this.model);
+          gltf.animations.forEach((clip) => {
+            const action = this.mixer.clipAction(clip);
+            action.play(); // Iniciar a animação
+          });
+        }
+
+        // Carregar e adicionar o áudio
+        // this.addAudio('assets/3d/ascenso/Ascenso Ferreira - MARACATU.mp3');
+        this.addAudio(
+          'assets/3d/antonio-maria/Antonio Maria_CAFÉ COM LEITE.mp3'
+        );
       }
-
-      // Carregar e adicionar o áudio
-      // this.addAudio('assets/3d/ascenso/Ascenso Ferreira - MARACATU.mp3');
-      this.addAudio('assets/3d/antonio-maria/Antonio Maria_CAFÉ COM LEITE.mp3');
-    });
+    );
 
     // Adicionar luz à cena
     const light = new THREE.DirectionalLight(0xffffff, 1);

@@ -32,7 +32,17 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/webrtc-adapter/out/adapter.js",
+              "src/assets/libs/js/three.js",
+              "src/assets/libs/js/LoaderSupport.js",
+              "src/assets/libs/js/MTLLoader.js",
+              "src/assets/libs/js/OBJLoader.js",
+              "src/assets/libs/js/ar.js",
+              "src/assets/libs/js/dat.gui.min.js",
+              "src/assets/libs/js/keyboard.js",
+              "src/assets/libs/js/stats.min.js"
+            ]
           },
           "configurations": {
             "production": {
