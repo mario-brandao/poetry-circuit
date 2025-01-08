@@ -15,8 +15,5 @@ export class StatuesComponent implements OnInit {
 
   ngOnInit(): void {
     this.statues$ = this.statuesService.statues$;
-    this.statues$.subscribe((statues) => {
-      console.log(statues);
-    });
   }
 }
