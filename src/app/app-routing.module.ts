@@ -1,21 +1,31 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { HomeComponent } from './pages/home/home.component';
+import { LandingComponent } from './pages/landing/landing.component';
 import { ThreeAnimationAndTextureComponent } from './three-animation-and-texture/three-animation-and-texture.component';
-import { ArImgDetectComponent } from './ar-img-detect/ar-img-detect.component';
 
 const routes: Routes = [
   {
-    path: '',
-    component: ArImgDetectComponent
+    path: 'landing',
+    component: LandingComponent,
+  },
+  {
+    path: 'home',
+    component: HomeComponent,
   },
   {
     path: 'monkey',
-    component: ThreeAnimationAndTextureComponent
-  }
+    component: ThreeAnimationAndTextureComponent,
+  },
+  {
+    path: '',
+    redirectTo: 'landing',
+    pathMatch: 'full',
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}
