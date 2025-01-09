@@ -1,10 +1,11 @@
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   OnDestroy,
-  OnInit,
   ViewChild,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 // import * as ArtoolkitMin from 'src/assets/jsartoolkit5/artoolkit.min.js';
 // import * as ArtoolkitApi from 'src/assets/jsartoolkit5/artoolkit.api.js';
@@ -49,7 +50,7 @@ interface config {
   templateUrl: './ar-img-detect.component.html',
   styleUrls: ['./ar-img-detect.component.scss'],
 })
-export class ArImgDetectComponent implements OnInit, OnDestroy {
+export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   @ViewChild('rendererContainer', { static: true })
   rendererContainer!: ElementRef;
 
@@ -70,49 +71,107 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   private markerRoot1!: Group;
   private mesh1!: Mesh;
 
-  private markerConfigurations: config[] = [
-    {
-      patternUrl: 'assets/libs/data/letterA.patt',
-      modelUrl: 'assets/3d/ascenso/ascenso_5-maracatu_lite.glb',
-      audioUrl: 'assets/3d/antonio-maria/Ascenso Ferreira - MARACATU.mp3',
-      scale: [3, 3, 3],
-      position: [0, 0, 0],
-      rotation: [1, 0, 0],
-      color: 0xff0000,
-    },
-    // {
-    //   patternUrl: 'assets/libs/data/letterA.patt',
-    //   modelUrl: 'assets/3d/ascenso/ascenso_trem-de-alagoas_lite.glb',
-    //   audioUrl:
-    //     'assets/3d/antonio-maria/Ascenso Ferreira - TREM DE ALAGOAS.mp3',
-    //   scale: [0, 0, 0],
-    //   position: [0, 0, 0],
-    //   rotation: [0, 0, 0],
-    //   color: 0xff0000,
-    // },
-    // {
-    //   patternUrl: 'assets/libs/data/letterA.patt',
-    //   modelUrl: 'assets/3d/antonio-maria/antonio maria5 - cafe com leite.glb',
-    //   audioUrl: 'assets/3d/antonio-maria/Antonio Maria_CAFÉ COM LEITE.mp3',
-    //   scale: [0, 0, 0],
-    //   position: [0, 0, 0],
-    //   color: 0x00ff00,
-    // },
-    // {
-    //   patternUrl: 'assets/libs/data/letterA.patt',
-    //   modelUrl: 'assets/3d/antonio-maria/antonio maria6 - ninguem me ama.glb',
-    //   audioUrl: 'assets/3d/antonio-maria/Antonio Maria_NINGUÉM ME AMA.mp3',
-    //   scale: [0, 0, 0],
-    //   position: [0, 0, 0],
-    //   color: 0x00ff00,
-    // },
-    // Adicione mais configurações conforme necessário
-  ];
+  // private markerConfigurations: config[] = [
+  //   {
+  //     patternUrl: 'assets/libs/data/letterA.patt',
+  //     modelUrl: 'assets/3d/[NOME_DO_POETA]/[NOME_DO_POETA]-poesia.glb',
+  //     audioUrl: 'assets/3d/[NOME_DO_POETA]/[NOME_DO_POETA]-poesia.mp3',
+  //     scale: [3, 3, 3],
+  //     position: [0, 0, 0],
+  //     rotation: [0, 0, 0],
+  //     color: 0xff0000,
+  //   },
+  //   {
+  //     patternUrl: 'assets/libs/data/letterA.patt',
+  //     modelUrl: 'assets/3d/[NOME_DO_POETA]/[NOME_DO_POETA]-poesia-2.glb',
+  //     audioUrl: 'assets/3d/[NOME_DO_POETA]/[NOME_DO_POETA]-poesia-2.mp3',
+  //     scale: [3, 3, 3],
+  //     position: [0, 0, 0],
+  //     rotation: [0, 0, 0],
+  //     color: 0xff0000,
+  //   },
+  // ];
+
+  // private markerConfigurations: config[] = [
+  //   {
+  //     patternUrl: 'assets/libs/data/letterA.patt',
+  //     modelUrl: 'assets/3d/ascenso/ascenso_5-maracatu_lite.glb',
+  //     audioUrl: 'assets/3d/antonio-maria/Ascenso Ferreira - MARACATU.mp3',
+  //     scale: [3, 3, 3],
+  //     position: [0, 0, 0],
+  //     rotation: [0, 0, 0],
+  //     color: 0xff0000,
+  //   },
+  // {
+  //   patternUrl: 'assets/libs/data/letterA.patt',
+  //   modelUrl: 'assets/3d/ascenso/ascenso_trem-de-alagoas_lite.glb',
+  //   audioUrl:
+  //     'assets/3d/antonio-maria/Ascenso Ferreira - TREM DE ALAGOAS.mp3',
+  //   scale: [0, 0, 0],
+  //   position: [0, 0, 0],
+  //   rotation: [0, 0, 0],
+  //   color: 0xff0000,
+  // },
+  // {
+  //   patternUrl: 'assets/libs/data/letterA.patt',
+  //   modelUrl: 'assets/3d/antonio-maria/antonio maria5 - cafe com leite.glb',
+  //   audioUrl: 'assets/3d/antonio-maria/Antonio Maria_CAFÉ COM LEITE.mp3',
+  //   scale: [0, 0, 0],
+  //   position: [0, 0, 0],
+  //   color: 0x00ff00,
+  // },
+  // {
+  //   patternUrl: 'assets/libs/data/letterA.patt',
+  //   modelUrl: 'assets/3d/antonio-maria/antonio maria6 - ninguem me ama.glb',
+  //   audioUrl: 'assets/3d/antonio-maria/Antonio Maria_NINGUÉM ME AMA.mp3',
+  //   scale: [0, 0, 0],
+  //   position: [0, 0, 0],
+  //   color: 0x00ff00,
+  // },
+  // Adicione mais configurações conforme necessário
+  // ];
 
   logs: string[] = [];
 
-  ngOnInit(): void {
-    this.initializeAR();
+  private poet: string = '';
+  private markerConfigurations: config[] = [];
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngAfterViewInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      // TODO: reset everything before changing poet/poetry
+      console.log({ params });
+
+      this.poet = params['poet'] || 'default';
+
+      this.markerConfigurations = [
+        {
+          patternUrl: 'assets/libs/data/letterA.patt',
+          modelUrl: `assets/3d/${this.poet}/${this.poet}-poesia.glb`,
+          audioUrl: `assets/3d/${this.poet}/${this.poet}-poesia.mp3`,
+          scale: [3, 3, 3],
+          position: [0, 0, 0],
+          rotation: [0, 0, 0],
+          color: 0xff0000,
+        },
+        {
+          patternUrl: 'assets/libs/data/letterA.patt',
+          modelUrl: `assets/3d/${this.poet}/${this.poet}-poesia-2.glb`,
+          audioUrl: `assets/3d/${this.poet}/${this.poet}-poesia-2.mp3`,
+          scale: [3, 3, 3],
+          position: [0, 0, 0],
+          rotation: [0, 0, 0],
+          color: 0xff0000,
+        },
+      ];
+
+      console.log(this.markerConfigurations);
+
+      // Inicializa o AR com as novas configurações
+      this.initializeAR();
+    });
+    // this.initializeAR();
   }
 
   ngOnDestroy(): void {
