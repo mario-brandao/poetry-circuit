@@ -140,38 +140,33 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.route.queryParams.subscribe((params) => {
-      // TODO: reset everything before changing poet/poetry
-      console.log({ params });
+      const poetParam = params['poet'] || 'ascenso';
+      if (this.poet !== poetParam) {
+        this.poet = poetParam;
+        this.markerConfigurations = [
+          {
+            patternUrl: 'assets/libs/data/letterA.patt',
+            modelUrl: `assets/3d/${this.poet}/${this.poet}-poesia.glb`,
+            audioUrl: `assets/3d/${this.poet}/${this.poet}-poesia.mp3`,
+            scale: [3, 3, 3],
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            color: 0xff0000,
+          },
+          {
+            patternUrl: 'assets/libs/data/letterA.patt',
+            modelUrl: `assets/3d/${this.poet}/${this.poet}-poesia-2.glb`,
+            audioUrl: `assets/3d/${this.poet}/${this.poet}-poesia-2.mp3`,
+            scale: [3, 3, 3],
+            position: [0, 0, 0],
+            rotation: [0, 0, 0],
+            color: 0xff0000,
+          },
+        ];
 
-      this.poet = params['poet'] || 'default';
-
-      this.markerConfigurations = [
-        {
-          patternUrl: 'assets/libs/data/letterA.patt',
-          modelUrl: `assets/3d/${this.poet}/${this.poet}-poesia.glb`,
-          audioUrl: `assets/3d/${this.poet}/${this.poet}-poesia.mp3`,
-          scale: [3, 3, 3],
-          position: [0, 0, 0],
-          rotation: [0, 0, 0],
-          color: 0xff0000,
-        },
-        {
-          patternUrl: 'assets/libs/data/letterA.patt',
-          modelUrl: `assets/3d/${this.poet}/${this.poet}-poesia-2.glb`,
-          audioUrl: `assets/3d/${this.poet}/${this.poet}-poesia-2.mp3`,
-          scale: [3, 3, 3],
-          position: [0, 0, 0],
-          rotation: [0, 0, 0],
-          color: 0xff0000,
-        },
-      ];
-
-      console.log(this.markerConfigurations);
-
-      // Inicializa o AR com as novas configurações
-      this.initializeAR();
+        this.initializeAR();
+      }
     });
-    // this.initializeAR();
   }
 
   ngOnDestroy(): void {
@@ -236,7 +231,44 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
 
   //   this.animate();
   // }
+
+  private resetAR(): void {
+    this.rendererContainer.nativeElement.innerHTML = '';
+    if (this.renderer) {
+      this.renderer.dispose();
+      this.renderer.forceContextLoss(); // Para garantir que o WebGL seja liberado
+      this.renderer.domElement = null;
+      this.renderer = null;
+    }
+
+    if (this.scene) {
+      this.scene.traverse((object: any) => {
+        if (object.geometry) {
+          object.geometry.dispose();
+        }
+        if (object.material) {
+          if (Array.isArray(object.material)) {
+            object.material.forEach((material: any) => material.dispose());
+          } else {
+            object.material.dispose();
+          }
+        }
+        if (object.texture) {
+          object.texture.dispose();
+        }
+      });
+
+      this.scene = null;
+    }
+
+    if (this.camera) {
+      this.camera = null;
+    }
+  }
+
   private initializeAR(): void {
+    this.resetAR();
+
     this.scene = new Scene();
 
     const ambientLight = new AmbientLight(0xcccccc, 0.5);
