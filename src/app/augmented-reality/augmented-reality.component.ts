@@ -11,14 +11,14 @@ export class AugmentedRealityComponent implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    this.openCamera('ascenso');
+    this.openCamera('ascenso', 'maracatu');
   }
 
-  openCamera(poet: string): void {
-    console.log('params triggered', { poet });
+  openCamera(poet: string, poetry: string): void {
+    console.log('params triggered', { poet, poetry });
 
     this.router.navigate([], {
-      queryParams: { poet },
+      queryParams: { poet, poetry },
       queryParamsHandling: 'merge', // Mantém os parâmetros existentes e adiciona/atualiza 'poeta'
       skipLocationChange: true, // Não muda o URL visível (opcional)
     });
