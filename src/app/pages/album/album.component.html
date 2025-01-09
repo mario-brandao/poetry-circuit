@@ -1,0 +1,14 @@
+<section class="flex flex-col w-screen h-screen overflow-hidden bg-black">
+  <app-header
+    type="subpage"
+    title="Álbum"
+    (buttonBack)="router.navigate(['/home'])"
+  ></app-header>
+  <div class="grid grid-cols-3 p-4 gap-y-5">
+    <app-statue-card
+      class="flex justify-self-center"
+      *ngFor="let statue of statues$ | async"
+      [statue]="statue"
+    ></app-statue-card>
+  </div>
+</section>
