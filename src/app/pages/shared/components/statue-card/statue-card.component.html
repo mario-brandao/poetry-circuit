@@ -1,4 +1,4 @@
-<div class="flex flex-col w-[105px]">
+<div class="flex flex-col w-[105px]" [routerLink]="'/writter/' + statue['id']">
   <img class="h-[174px]" [src]="statue.cover" />
   <p class="text-[10px] text-white leading-[12.19px] mt-3 w-20">
     {{ statue.name | uppercase }}

@@ -1,5 +1,6 @@
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { register } from 'swiper/element/bundle';
 
 import { AppRoutingModule } from './app-routing.module';
 
@@ -10,14 +11,18 @@ import { ThreeCubeComponent } from './three-cube/three-cube.component';
 import { ThreeGlbComponent } from './three-glb/three-glb.component';
 import { ThreeObjComponent } from './three-obj/three-obj.component';
 
+import { AlbumComponent } from './pages/album/album.component';
+import { MapComponent } from './pages/home/components/map/map.component';
+import { StatuesComponent } from './pages/home/components/statues/statues.component';
 import { HomeComponent } from './pages/home/home.component';
 import { LandingComponent } from './pages/landing/landing.component';
-import { MapComponent } from './pages/home/components/map/map.component';
-import { SideMenuComponent } from './pages/shared/components/side-menu/side-menu.component';
 import { HeaderComponent } from './pages/shared/components/header/header.component';
-import { StatuesComponent } from './pages/home/components/statues/statues.component';
+import { SideMenuComponent } from './pages/shared/components/side-menu/side-menu.component';
 import { StatueCardComponent } from './pages/shared/components/statue-card/statue-card.component';
-import { AlbumComponent } from './pages/album/album.component';
+import { PicsCarouselComponent } from './pages/writter-profile/pics-carousel/pics-carousel.component';
+import { WritterProfileComponent } from './pages/writter-profile/writter-profile.component';
+
+register();
 
 @NgModule({
   declarations: [
@@ -35,9 +40,12 @@ import { AlbumComponent } from './pages/album/album.component';
     StatuesComponent,
     StatueCardComponent,
     AlbumComponent,
+    WritterProfileComponent,
+    PicsCarouselComponent,
   ],
   imports: [BrowserModule, AppRoutingModule],
   providers: [],
   bootstrap: [AppComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}
