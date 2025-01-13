@@ -1,10 +1,21 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { AlbumComponent } from './pages/album/album.component';
+import { HomeComponent } from './pages/home/home.component';
+import { LandingComponent } from './pages/landing/landing.component';
 
 const routes: Routes = [
   {
-    path: '',
-    loadChildren: () => import('./home/home.module').then((m) => m.HomeModule),
+    path: 'landing',
+    component: LandingComponent,
+  },
+  {
+    path: 'home',
+    component: HomeComponent,
+  },
+  {
+    path: 'album',
+    component: AlbumComponent,
   },
   {
     path: 'augmented-reality',
@@ -12,6 +23,11 @@ const routes: Routes = [
       import('./augmented-reality/augmented-reality.module').then(
         (m) => m.AugmentedRealityModule
       ),
+  },
+  {
+    path: '',
+    redirectTo: 'landing',
+    pathMatch: 'full',
   },
 ];
 

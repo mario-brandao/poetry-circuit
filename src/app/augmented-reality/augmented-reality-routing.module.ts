@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ArImgDetectComponent } from './ar-img-detect/ar-img-detect.component';
 import { AugmentedRealityComponent } from './augmented-reality.component';
-import { ThreeAnimationAndTextureComponent } from './three-animation-and-texture/three-animation-and-texture.component';
 
 const routes: Routes = [
   {
@@ -12,10 +11,16 @@ const routes: Routes = [
       {
         path: '',
         component: ArImgDetectComponent,
-      },
-      {
-        path: 'monkey',
-        component: ThreeAnimationAndTextureComponent,
+        // children: [
+        //   {
+        //     path: 'ascenso-maracatu',
+        //     data: { poetry: 'ascenso-maracatu' },
+        //   },
+        //   {
+        //     path: 'ascenso-trem-de-alagoas',
+        //     data: { poetry: 'ascenso-trem-de-alagoas' },
+        //   },
+        // ],
       },
     ],
   },

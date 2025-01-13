@@ -1,0 +1,46 @@
+<header class="px-4 py-2 h-[60px] flex justify-between items-center">
+  <img
+    *ngIf="type === 'default'"
+    src="./../../assets/images/logo.png"
+    class="w-[106px] h-[52px]"
+  />
+  <svg
+    *ngIf="type !== 'default'"
+    width="14"
+    height="23"
+    viewBox="0 0 14 23"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    (click)="buttonBack.emit()"
+  >
+    <path
+      d="M13.4158 3.30455V1.14774C13.4158 0.960796 13.201 0.857559 13.0559 0.971957L0.477754 10.7962C0.370885 10.8793 0.284411 10.9857 0.224927 11.1073C0.165443 11.2289 0.134521 11.3625 0.134521 11.4979C0.134521 11.6333 0.165443 11.7669 0.224927 11.8885C0.284411 12.0101 0.370885 12.1165 0.477754 12.1996L13.0559 22.0239C13.2038 22.1383 13.4158 22.035 13.4158 21.8481V19.6913C13.4158 19.5545 13.3516 19.4234 13.2456 19.3397L3.20097 11.4993L13.2456 3.65611C13.3516 3.5724 13.4158 3.44127 13.4158 3.30455Z"
+      fill="white"
+    />
+  </svg>
+  <h1 *ngIf="type !== 'default'" class="text-xl text-[#BD9717]">
+    {{ title | uppercase }}
+  </h1>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke-width="1.5"
+    stroke="white"
+    class="size-6"
+    (click)="openedMenu = !openedMenu"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+    />
+  </svg>
+</header>
+<div
+  class="sidebar-slider fixed flex top-0 left-0 w-screen"
+  [class.sidebar-slide-in]="openedMenu"
+>
+  <app-side-menu></app-side-menu>
+  <div class="h-screen w-[inherit]" (click)="openedMenu = !openedMenu"></div>
+</div>

@@ -1,10 +1,11 @@
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   OnDestroy,
-  OnInit,
   ViewChild,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 // import * as ArtoolkitMin from 'src/assets/jsartoolkit5/artoolkit.min.js';
 // import * as ArtoolkitApi from 'src/assets/jsartoolkit5/artoolkit.api.js';
@@ -25,7 +26,6 @@ import {
   Clock,
   Color,
   Group,
-  Mesh,
   PositionalAudio,
   Scene,
   WebGLRenderer,
@@ -49,7 +49,7 @@ interface config {
   templateUrl: './ar-img-detect.component.html',
   styleUrls: ['./ar-img-detect.component.scss'],
 })
-export class ArImgDetectComponent implements OnInit, OnDestroy {
+export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   @ViewChild('rendererContainer', { static: true })
   rendererContainer!: ElementRef;
 
@@ -67,123 +67,94 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   private arToolkitSource: any;
   private arToolkitContext: any;
 
-  private markerRoot1!: Group;
-  private mesh1!: Mesh;
-
-  private markerConfigurations: config[] = [
-    {
-      patternUrl: 'assets/libs/data/letterA.patt',
-      modelUrl: 'assets/3d/ascenso/ascenso_5-maracatu_lite.glb',
-      audioUrl: 'assets/3d/antonio-maria/Ascenso Ferreira - MARACATU.mp3',
-      scale: [3, 3, 3],
-      position: [0, 0, 0],
-      rotation: [1, 0, 0],
-      color: 0xff0000,
-    },
-    // {
-    //   patternUrl: 'assets/libs/data/letterA.patt',
-    //   modelUrl: 'assets/3d/ascenso/ascenso_trem-de-alagoas_lite.glb',
-    //   audioUrl:
-    //     'assets/3d/antonio-maria/Ascenso Ferreira - TREM DE ALAGOAS.mp3',
-    //   scale: [0, 0, 0],
-    //   position: [0, 0, 0],
-    //   rotation: [0, 0, 0],
-    //   color: 0xff0000,
-    // },
-    // {
-    //   patternUrl: 'assets/libs/data/letterA.patt',
-    //   modelUrl: 'assets/3d/antonio-maria/antonio maria5 - cafe com leite.glb',
-    //   audioUrl: 'assets/3d/antonio-maria/Antonio Maria_CAFÉ COM LEITE.mp3',
-    //   scale: [0, 0, 0],
-    //   position: [0, 0, 0],
-    //   color: 0x00ff00,
-    // },
-    // {
-    //   patternUrl: 'assets/libs/data/letterA.patt',
-    //   modelUrl: 'assets/3d/antonio-maria/antonio maria6 - ninguem me ama.glb',
-    //   audioUrl: 'assets/3d/antonio-maria/Antonio Maria_NINGUÉM ME AMA.mp3',
-    //   scale: [0, 0, 0],
-    //   position: [0, 0, 0],
-    //   color: 0x00ff00,
-    // },
-    // Adicione mais configurações conforme necessário
-  ];
-
   logs: string[] = [];
 
-  ngOnInit(): void {
-    this.initializeAR();
+  private poet: string = '';
+  private poetry: string = '';
+  private markerConfigurations: config;
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngAfterViewInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      const poetParam = params['poet'] || 'ascenso';
+      const poetryParam = params['poetry'] || 'maracatu';
+      const paramsChanged =
+        this.poet !== poetParam || this.poetry !== poetryParam;
+
+      if (paramsChanged) {
+        this.resetViewParams(poetParam, poetryParam);
+        this.initializeAR();
+      }
+    });
   }
 
   ngOnDestroy(): void {
-    this.positionalAudio.stop();
-    window.removeEventListener('resize', this.onResize);
+    this.clearAR();
   }
 
-  // private initializeAR(): void {
-  //   this.scene = new Scene();
+  resetViewParams(poet: string, poetry: string): void {
+    this.poet = poet;
+    this.poetry = poetry;
+    this.markerConfigurations = {
+      patternUrl: 'assets/pattern-cp.patt',
+      // patternUrl: 'assets/libs/data/letterA.patt',
+      modelUrl: `assets/3d/${this.poet}/${this.poetry}.glb`,
+      audioUrl: `assets/3d/${this.poet}/${this.poetry}.mp3`,
+      scale: [3, 3, 3],
+      position: [0, 0, 0],
+      rotation: [-1, 0, 0],
+      color: 0xff0000,
+    };
+  }
 
-  //   const ambientLight = new AmbientLight(0xcccccc, 0.5);
-  //   this.scene.add(ambientLight);
+  private clearAR(): void {
+    this.positionalAudio?.stop();
+    window.removeEventListener('resize', this.onResize);
+    this.rendererContainer.nativeElement.innerHTML = '';
+    if (this.renderer) {
+      this.renderer.dispose();
+      this.renderer.forceContextLoss(); // Para garantir que o WebGL seja liberado
+      this.renderer.domElement = null;
+      this.renderer = null;
+    }
 
-  //   this.camera = new Camera();
-  //   this.scene.add(this.camera);
+    if (this.scene) {
+      this.scene.traverse((object: any) => {
+        if (object.geometry) {
+          object.geometry.dispose();
+        }
+        if (object.material) {
+          if (Array.isArray(object.material)) {
+            object.material.forEach((material: any) => material.dispose());
+          } else {
+            object.material.dispose();
+          }
+        }
+        if (object.texture) {
+          object.texture.dispose();
+        }
+      });
 
-  //   this.renderer = new WebGLRenderer({ antialias: true, alpha: true });
-  //   this.renderer.setSize(window.innerWidth, window.innerHeight);
-  //   this.renderer.setClearColor(new Color('lightgrey'), 0);
-  //   this.renderer.setPixelRatio(window.devicePixelRatio);
+      this.scene = null;
+    }
 
-  //   this.rendererContainer.nativeElement.appendChild(this.renderer.domElement);
+    if (this.camera) {
+      this.camera = null;
+    }
+  }
 
-  //   this.clock = new Clock();
-  //   this.deltaTime = 0;
-  //   this.totalTime = 0;
-
-  //   // ARToolkit setup
-  //   this.arToolkitSource = new THREEx.ArToolkitSource({ sourceType: 'webcam' });
-  //   this.arToolkitSource.init(() => this.onResize());
-
-  //   this.arToolkitContext = new THREEx.ArToolkitContext({
-  //     cameraParametersUrl: 'assets/libs/data/camera_para.dat',
-  //     detectionMode: 'mono'
-  //   });
-  //   this.arToolkitContext.init(() => {
-  //     this.camera.projectionMatrix.copy(this.arToolkitContext.getProjectionMatrix());
-  //   });
-
-  //   // Marker setup
-  //   this.markerRoot1 = new Group();
-  //   this.scene.add(this.markerRoot1);
-
-  //   const markerControls1 = new THREEx.ArMarkerControls(this.arToolkitContext, this.markerRoot1, {
-  //     type: 'pattern',
-  //     patternUrl: 'assets/libs/data/hiro.patt'
-  //   });
-
-  //   const geometry1 = new BoxGeometry(1, 1, 1);
-  //   const material1 = new MeshNormalMaterial({
-  //     transparent: true,
-  //     opacity: 0.5,
-  //     side: DoubleSide
-  //   });
-
-  //   this.mesh1 = new Mesh(geometry1, material1);
-  //   this.mesh1.position.y = 0.5;
-  //   this.markerRoot1.add(this.mesh1);
-
-  //   // Handle resize
-  //   window.addEventListener('resize', () => this.onResize());
-
-  //   this.animate();
-  // }
   private initializeAR(): void {
+    this.clearAR();
+
     this.scene = new Scene();
 
     const ambientLight = new AmbientLight(0xcccccc, 0.5);
     this.scene.add(ambientLight);
 
     this.camera = new Camera();
+    this.audioListener = new AudioListener();
+    this.camera.add(this.audioListener);
     this.scene.add(this.camera);
 
     this.renderer = new WebGLRenderer({ antialias: true, alpha: true });
@@ -197,7 +168,6 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     this.deltaTime = 0;
     this.totalTime = 0;
 
-    // Setup ARToolkit
     this.arToolkitSource = new THREEx.ArToolkitSource({ sourceType: 'webcam' });
     this.arToolkitSource.init(() => this.onResize());
 
@@ -211,18 +181,17 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       );
     });
 
-    // Configure markers and models
-    this.markerConfigurations.forEach((config: config) =>
-      this.addMarker(config)
-    );
+    // TODO: fix browser issue
+    this.audioListener = new AudioListener();
+    this.camera.add(this.audioListener);
+    this.addMarker();
 
-    // Handle resize
     window.addEventListener('resize', () => this.onResize());
 
     this.animate();
   }
 
-  private addMarker(config: config): void {
+  private addMarker(): void {
     const markerRoot = new Group();
     this.scene.add(markerRoot);
 
@@ -231,21 +200,24 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       markerRoot,
       {
         type: 'pattern',
-        patternUrl: config.patternUrl,
+        patternUrl: this.markerConfigurations.patternUrl,
       }
     );
 
     // Carregar modelo 3D
     const loader = new GLTFLoader();
     loader.load(
-      config.modelUrl,
+      this.markerConfigurations.modelUrl,
       (gltf: GLTF) => {
-        console.log(`loaded model ${config.modelUrl}`);
-        this.logs.push(`loaded model ${config.modelUrl}`);
+        console.log(`loaded model ${this.markerConfigurations.modelUrl}`);
+        this.logs.push(`loaded model ${this.markerConfigurations.modelUrl}`);
+
         const model = gltf.scene;
-        const [scaleX, scaleY, scaleZ] = config.scale;
-        const [positionX, positionY, positionZ] = config.position;
-        const [rotationX, rotationY, rotationZ] = config.rotation;
+        const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
+        const [positionX, positionY, positionZ] =
+          this.markerConfigurations.position;
+        const [rotationX, rotationY, rotationZ] =
+          this.markerConfigurations.rotation;
         model.scale.set(scaleX, scaleY, scaleZ);
         model.position.set(positionX, positionY, positionZ);
         model.rotation.set(rotationX, rotationY, rotationZ);
@@ -259,7 +231,11 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
         }
 
         markerRoot.add(model);
-        this.addAudio(config.audioUrl);
+
+        console.log(markerRoot, model);
+        this.model = model;
+
+        this.addAudio(this.markerConfigurations.audioUrl);
 
         console.log(markerRoot);
       },
@@ -275,7 +251,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     // Opcional: Adicionar cubo ou textura básica para depuração
     // const geometry = new BoxGeometry(1, 1, 1);
     // const material = new MeshBasicMaterial({
-    //   color: config.color,
+    //   color: this.markerConfigurations.color,
     //   transparent: true,
     //   opacity: 0.5,
     // });
@@ -285,29 +261,39 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   }
 
   private addAudio(audioPath: string): void {
+    this.logs.push('add audio');
     // Carregar o arquivo de áudio
     const audioLoader = new AudioLoader();
     this.positionalAudio = new PositionalAudio(this.audioListener); // Usando PositionalAudio para um efeito 3D
 
+    this.logs.push('add audio 2');
+
     audioLoader.load(audioPath, (buffer) => {
+      this.logs.push('add audio 3');
+
       this.positionalAudio.setBuffer(buffer);
       this.positionalAudio.setLoop(true); // Configure se você quer que o áudio faça loop
       this.positionalAudio.setVolume(0.5); // Ajuste o volume
+
+      this.logs.push('add audio 4');
 
       // Reproduzir o áudio sincronizado com a animação
       this.positionalAudio.play();
     });
 
+    this.logs.push('add audio 5');
+
     // Adicionar o áudio à cena (vinculado ao modelo)
     this.model.add(this.positionalAudio);
+    this.logs.push('add audio 6');
   }
 
   private onResize = (): void => {
-    this.arToolkitSource.onResize();
-    this.arToolkitSource.copySizeTo(this.renderer.domElement);
+    this.arToolkitSource.onResizeElement();
+    this.arToolkitSource.copyElementSizeTo(this.renderer.domElement);
 
     if (this.arToolkitContext.arController !== null) {
-      this.arToolkitSource.copySizeTo(
+      this.arToolkitSource.copyElementSizeTo(
         this.arToolkitContext.arController.canvas
       );
     }
