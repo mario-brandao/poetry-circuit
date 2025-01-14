@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import writtersData from './writters.json';
+import writersData from './writers.json';
 
 export interface Statue {
   cover: string;
@@ -20,26 +20,26 @@ export class AppDB extends Dexie {
   async populate() {
     await db.statues.bulkAdd([
       {
-        name: writtersData[0].name,
-        cover: writtersData[0].cover,
+        name: writersData[0].name,
+        cover: writersData[0].cover,
       },
       {
-        name: writtersData[1].name,
-        cover: writtersData[1].cover,
+        name: writersData[1].name,
+        cover: writersData[1].cover,
       },
       {
-        name: writtersData[2].name,
-        cover: writtersData[2].cover,
+        name: writersData[2].name,
+        cover: writersData[2].cover,
       },
       {
-        name: writtersData[3].name,
-        cover: writtersData[3].cover,
+        name: writersData[3].name,
+        cover: writersData[3].cover,
       },
       {
-        name: writtersData[4].name,
-        cover: writtersData[4].cover,
+        name: writersData[4].name,
+        cover: writersData[4].cover,
       },
-      { name: writtersData[5].name, cover: writtersData[5].cover },
+      { name: writersData[5].name, cover: writersData[5].cover },
     ]);
   }
 }

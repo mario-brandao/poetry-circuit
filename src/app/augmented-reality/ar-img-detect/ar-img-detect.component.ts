@@ -69,21 +69,22 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
 
   logs: string[] = [];
 
-  private poet: string = '';
-  private poetry: string = '';
+  private writer: string = '';
+  private poem: string = '';
   private markerConfigurations: config;
 
   constructor(private route: ActivatedRoute) {}
 
   ngAfterViewInit(): void {
+    // TODO: fix load and reload
     this.route.queryParams.subscribe((params) => {
-      const poetParam = params['poet'] || 'ascenso';
-      const poetryParam = params['poetry'] || 'maracatu';
+      const writerParam = params['writer'] || 'ascenso-ferreira';
+      const poemParam = params['poem'] || 'maracatu';
       const paramsChanged =
-        this.poet !== poetParam || this.poetry !== poetryParam;
+        this.writer !== writerParam || this.poem !== poemParam;
 
       if (paramsChanged) {
-        this.resetViewParams(poetParam, poetryParam);
+        this.resetViewParams(writerParam, poemParam);
         this.initializeAR();
       }
     });
@@ -93,23 +94,31 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     this.clearAR();
   }
 
-  resetViewParams(poet: string, poetry: string): void {
-    this.poet = poet;
-    this.poetry = poetry;
+  resetViewParams(writer: string, poem: string): void {
+    this.writer = writer;
+    this.poem = poem;
     this.markerConfigurations = {
       patternUrl: 'assets/pattern-cp.patt',
       // patternUrl: 'assets/libs/data/letterA.patt',
-      modelUrl: `assets/3d/${this.poet}/${this.poetry}.glb`,
-      audioUrl: `assets/3d/${this.poet}/${this.poetry}.mp3`,
+      modelUrl: `assets/writers-media/${this.writer}/${this.poem}.glb`,
+      audioUrl: `assets/writers-media/${this.writer}/${this.poem}.mp3`,
       scale: [3, 3, 3],
       position: [0, 0, 0],
       rotation: [-1, 0, 0],
       color: 0xff0000,
     };
+
+    console.log(
+      this.markerConfigurations.modelUrl,
+      this.markerConfigurations.audioUrl
+    );
   }
 
   private clearAR(): void {
+    // setTimeout(() => {
+    this.audioListener?.clear();
     this.positionalAudio?.stop();
+    this.arToolkitContext?.stop();
     window.removeEventListener('resize', this.onResize);
     this.rendererContainer.nativeElement.innerHTML = '';
     if (this.renderer) {
@@ -142,6 +151,7 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     if (this.camera) {
       this.camera = null;
     }
+    // });
   }
 
   private initializeAR(): void {
@@ -153,8 +163,6 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     this.scene.add(ambientLight);
 
     this.camera = new Camera();
-    this.audioListener = new AudioListener();
-    this.camera.add(this.audioListener);
     this.scene.add(this.camera);
 
     this.renderer = new WebGLRenderer({ antialias: true, alpha: true });
@@ -286,6 +294,9 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     // Adicionar o áudio à cena (vinculado ao modelo)
     this.model.add(this.positionalAudio);
     this.logs.push('add audio 6');
+
+    this.audioListener = new AudioListener();
+    this.camera.add(this.audioListener);
   }
 
   private onResize = (): void => {
