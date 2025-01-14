@@ -10,6 +10,7 @@ import { Statue } from 'src/db';
 })
 export class WritterProfileComponent implements OnInit {
   statue: Statue;
+  showingBio = true;
 
   constructor(
     protected router: Router,

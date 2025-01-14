@@ -5,12 +5,8 @@ import { register } from 'swiper/element/bundle';
 import { AppRoutingModule } from './app-routing.module';
 
 import { AppComponent } from './app.component';
-import { ArImgDetectComponent } from './ar-img-detect/ar-img-detect.component';
-import { ThreeAnimationAndTextureComponent } from './three-animation-and-texture/three-animation-and-texture.component';
-import { ThreeCubeComponent } from './three-cube/three-cube.component';
-import { ThreeGlbComponent } from './three-glb/three-glb.component';
-import { ThreeObjComponent } from './three-obj/three-obj.component';
 
+import { GoogleMapsModule } from '@angular/google-maps';
 import { AlbumComponent } from './pages/album/album.component';
 import { MapComponent } from './pages/home/components/map/map.component';
 import { StatuesComponent } from './pages/home/components/statues/statues.component';
@@ -27,11 +23,6 @@ register();
 @NgModule({
   declarations: [
     AppComponent,
-    ThreeCubeComponent,
-    ThreeObjComponent,
-    ThreeGlbComponent,
-    ThreeAnimationAndTextureComponent,
-    ArImgDetectComponent,
     LandingComponent,
     HomeComponent,
     MapComponent,
@@ -43,7 +34,7 @@ register();
     WritterProfileComponent,
     PicsCarouselComponent,
   ],
-  imports: [BrowserModule, AppRoutingModule],
+  imports: [BrowserModule, AppRoutingModule, GoogleMapsModule],
   providers: [],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

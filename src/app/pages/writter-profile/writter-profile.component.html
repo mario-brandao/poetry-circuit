@@ -1,10 +1,10 @@
-<section class="flex flex-col w-screen h-screen overflow-hidden bg-black">
+<section class="flex flex-col w-screen h-screen bg-black">
   <app-header
     type="subpage-writter-profile"
     [title]="statue?.location"
     (buttonBack)="router.navigate(['/home'])"
   ></app-header>
-  <div class="py-4 px-5">
+  <div class="py-4 px-5 overflow-y-auto overflow-hidden">
     <div class="flex justify-between">
       <div>
         <p class="text-[10px] text-[#FFFEAE] mb-1">
@@ -41,5 +41,38 @@
       </div>
     </div>
     <app-pics-carousel [images]="statue?.images"></app-pics-carousel>
+    <div class="mt-6 p-2 text-white text-[10px]">
+      <div class="flex justify-between" (click)="showingBio = !showingBio">
+        <h3>BIOGRAFIA</h3>
+        <div class="w-5 h-5">
+          <svg
+            class="transition-all"
+            [ngStyle]="{
+              transform: showingBio ? 'rotate(0deg)' : 'rotate(180deg)'
+            }"
+            width="15"
+            height="9"
+            viewBox="0 0 15 9"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M13.5 1.5L7.5 7.5L1.5 1.5"
+              stroke="#AAAAAA"
+              stroke-width="2"
+              stroke-linecap="square"
+            />
+          </svg>
+        </div>
+      </div>
+      <p
+        class="mt-3 transition-all"
+        [ngStyle]="{
+          display: showingBio ? 'block' : 'none'
+        }"
+      >
+        {{ statue?.bio }}{{ statue?.bio }}{{ statue?.bio }}
+      </p>
+    </div>
   </div>
 </section>
