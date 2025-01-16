@@ -6,6 +6,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { MobileLogsService } from 'src/app/services/mobile-logs/mobile-logs.service';
 
 // import * as ArtoolkitMin from 'src/assets/jsartoolkit5/artoolkit.min.js';
 // import * as ArtoolkitApi from 'src/assets/jsartoolkit5/artoolkit.api.js';
@@ -30,7 +31,7 @@ import {
   Scene,
   WebGLRenderer,
 } from 'three';
-import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 
 declare const THREEx: any;
 
@@ -67,23 +68,20 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   private arToolkitSource: any;
   private arToolkitContext: any;
 
-  logs: string[] = [];
-
   private writer: string = '';
   private poem: string = '';
   private markerConfigurations: config;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute, private log: MobileLogsService) {}
 
   ngAfterViewInit(): void {
-    // TODO: fix load and reload
     this.route.queryParams.subscribe((params) => {
-      const writerParam = params['writer'] || 'ascenso-ferreira';
-      const poemParam = params['poem'] || 'maracatu';
+      const writerParam = params['writer'];
+      const poemParam = params['poem'];
       const paramsChanged =
         this.writer !== writerParam || this.poem !== poemParam;
 
-      if (paramsChanged) {
+      if (writerParam && poemParam && paramsChanged) {
         this.resetViewParams(writerParam, poemParam);
         this.initializeAR();
       }
@@ -100,7 +98,7 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     this.markerConfigurations = {
       patternUrl: 'assets/pattern-cp.patt',
       // patternUrl: 'assets/libs/data/letterA.patt',
-      modelUrl: `assets/writers-media/${this.writer}/${this.poem}.glb`,
+      modelUrl: `assets/writers-media/${this.writer}/${this.poem}.fbx`,
       audioUrl: `assets/writers-media/${this.writer}/${this.poem}.mp3`,
       scale: [3, 3, 3],
       position: [0, 0, 0],
@@ -213,45 +211,54 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     );
 
     // Carregar modelo 3D
-    const loader = new GLTFLoader();
+    const loader = new FBXLoader();
     loader.load(
       this.markerConfigurations.modelUrl,
-      (gltf: GLTF) => {
-        console.log(`loaded model ${this.markerConfigurations.modelUrl}`);
-        this.logs.push(`loaded model ${this.markerConfigurations.modelUrl}`);
+      // 'assets/writers-media/antonio-maria/ninguem-me-ama.fbx',
+      (group: Group) => {
+        this.log.sendLog('loaded model', this.markerConfigurations.modelUrl);
 
-        const model = gltf.scene;
-        const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
-        const [positionX, positionY, positionZ] =
-          this.markerConfigurations.position;
-        const [rotationX, rotationY, rotationZ] =
-          this.markerConfigurations.rotation;
-        model.scale.set(scaleX, scaleY, scaleZ);
-        model.position.set(positionX, positionY, positionZ);
-        model.rotation.set(rotationX, rotationY, rotationZ);
+        this.log.sendLog('loaded model', 'successfully');
+
+        const model = group;
+        // const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
+        // const [positionX, positionY, positionZ] =
+        //   this.markerConfigurations.position;
+        // const [rotationX, rotationY, rotationZ] =
+        //   this.markerConfigurations.rotation;
+        // model.scale.set(scaleX, scaleY, scaleZ);
+        // model.position.set(positionX, positionY, positionZ);
+        // model.rotation.set(rotationX, rotationY, rotationZ);
 
         // Configurar animações, se existirem
-        if (gltf.animations && gltf.animations.length > 0) {
+        if (group.animations && group.animations.length > 0) {
           const mixer = new AnimationMixer(model);
-          gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+          group.animations.forEach((clip) => mixer.clipAction(clip).play());
           // Salve o mixer para atualização no loop de animação, se necessário
           this.mixer = mixer;
         }
 
         markerRoot.add(model);
 
-        console.log(markerRoot, model);
         this.model = model;
 
         this.addAudio(this.markerConfigurations.audioUrl);
 
-        console.log(markerRoot);
+        this.log.sendLog('after load', 'model');
+
+        // TODO: show not fount udim texture
+
+        console.log('---->', this.model);
       },
-      (x) => {
-        if (x.type !== 'progress') {
-          console.log('error', x);
-          this.logs.push('load error');
-          this.logs.push(JSON.stringify(x));
+      (xhr) => {
+        // const progress = (xhr.loaded / xhr.total) * 100 + '% loaded';
+        // this.log.sendLog('loading', progress);
+      },
+      (error) => {
+        if (error.type !== 'progress') {
+          console.log(error);
+
+          // this.log.sendLog('loader error', error.message);
         }
       }
     );
@@ -269,34 +276,30 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   }
 
   private addAudio(audioPath: string): void {
-    this.logs.push('add audio');
+    // this.log.sendLog('add audio', audioPath);
+
     // Carregar o arquivo de áudio
     const audioLoader = new AudioLoader();
     this.positionalAudio = new PositionalAudio(this.audioListener); // Usando PositionalAudio para um efeito 3D
 
-    this.logs.push('add audio 2');
-
     audioLoader.load(audioPath, (buffer) => {
-      this.logs.push('add audio 3');
-
       this.positionalAudio.setBuffer(buffer);
       this.positionalAudio.setLoop(true); // Configure se você quer que o áudio faça loop
       this.positionalAudio.setVolume(0.5); // Ajuste o volume
 
-      this.logs.push('add audio 4');
-
       // Reproduzir o áudio sincronizado com a animação
       this.positionalAudio.play();
-    });
 
-    this.logs.push('add audio 5');
+      // this.log.sendLog('add audio', 2);
+    });
 
     // Adicionar o áudio à cena (vinculado ao modelo)
     this.model.add(this.positionalAudio);
-    this.logs.push('add audio 6');
 
     this.audioListener = new AudioListener();
     this.camera.add(this.audioListener);
+
+    // this.log.sendLog('add audio', 3);
   }
 
   private onResize = (): void => {

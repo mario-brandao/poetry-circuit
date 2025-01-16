@@ -5,6 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 
 import { AppComponent } from './app.component';
 
+import { HttpClientModule } from '@angular/common/http';
 import { AlbumComponent } from './pages/album/album.component';
 import { MapComponent } from './pages/home/components/map/map.component';
 import { StatuesComponent } from './pages/home/components/statues/statues.component';
@@ -26,7 +27,7 @@ import { StatueCardComponent } from './pages/shared/components/statue-card/statu
     StatueCardComponent,
     AlbumComponent,
   ],
-  imports: [BrowserModule, AppRoutingModule],
+  imports: [BrowserModule, AppRoutingModule, HttpClientModule],
   providers: [],
   bootstrap: [AppComponent],
 })

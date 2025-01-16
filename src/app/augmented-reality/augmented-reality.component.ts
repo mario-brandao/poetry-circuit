@@ -13,9 +13,9 @@ export class AugmentedRealityComponent implements OnInit {
   ngOnInit(): void {
     const userConsent = confirm('Deseja iniciar o áudio e o vídeo?');
     if (userConsent) {
-      // this.openCamera('ascenso-ferreira', 'maracatu'); // nao mexe a boca e pixação
+      this.openCamera('ascenso-ferreira', 'maracatu'); // nao mexe a boca e pixação
       // this.openCamera('ascenso-ferreira', 'trem-de-alagoas'); // nao mexe a boca
-      this.openCamera('antonio-maria', 'cafe-com-leite'); // nao mexe a boca
+      // this.openCamera('antonio-maria', 'cafe-com-leite'); // nao mexe a boca
       // this.openCamera('antonio-maria', 'ninguem-me-ama'); // animação e posição quebradas
     }
   }
