@@ -10,10 +10,18 @@ import { Statue } from 'src/db';
 })
 export class StatuesComponent implements OnInit {
   statues$: Observable<Statue[]>;
+  visitedStatues$: Observable<Statue[]>;
+
+  hasVisitedStatues = false;
 
   constructor(private statuesService: StatuesService) {}
 
   ngOnInit(): void {
     this.statues$ = this.statuesService.statues$;
+    this.visitedStatues$ = this.statuesService.visitedStatues$;
+
+    this.visitedStatues$.subscribe(
+      (statues) => (this.hasVisitedStatues = statues.length > 0)
+    );
   }
 }

@@ -8,6 +8,9 @@ import { db, Statue } from 'src/db';
 })
 export class StatuesService {
   statues$ = liveQuery(() => db.statues.toArray());
+  visitedStatues$ = liveQuery(() =>
+    db.statues.filter((statue) => statue.visited).toArray()
+  );
 
   constructor() {}
 

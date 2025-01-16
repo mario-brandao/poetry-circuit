@@ -22,6 +22,5 @@ export class WritterProfileComponent implements OnInit {
     this.statue = await this.statuesService.getStatueData(
       Number(this.route.snapshot.params.id)
     );
-    console.log(this.statue);
   }
 }
