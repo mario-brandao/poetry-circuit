@@ -4,6 +4,7 @@ import { ThreeAnimationAndTextureComponent } from './augmented-reality/three-ani
 import { AlbumComponent } from './pages/album/album.component';
 import { HomeComponent } from './pages/home/home.component';
 import { LandingComponent } from './pages/landing/landing.component';
+import { TutorialComponent } from './pages/tutorial/tutorial.component';
 import { WritterProfileComponent } from './pages/writter-profile/writter-profile.component';
 
 const routes: Routes = [
@@ -22,6 +23,10 @@ const routes: Routes = [
   {
     path: 'writter/:id',
     component: WritterProfileComponent,
+  },
+  {
+    path: 'tutorial',
+    component: TutorialComponent,
   },
   {
     path: 'monkey',

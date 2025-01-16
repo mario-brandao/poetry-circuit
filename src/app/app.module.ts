@@ -17,6 +17,7 @@ import { SideMenuComponent } from './pages/shared/components/side-menu/side-menu
 import { StatueCardComponent } from './pages/shared/components/statue-card/statue-card.component';
 import { PicsCarouselComponent } from './pages/writter-profile/pics-carousel/pics-carousel.component';
 import { WritterProfileComponent } from './pages/writter-profile/writter-profile.component';
+import { TutorialComponent } from './pages/tutorial/tutorial.component';
 
 register();
 
@@ -33,6 +34,7 @@ register();
     AlbumComponent,
     WritterProfileComponent,
     PicsCarouselComponent,
+    TutorialComponent,
   ],
   imports: [BrowserModule, AppRoutingModule, GoogleMapsModule],
   providers: [],
