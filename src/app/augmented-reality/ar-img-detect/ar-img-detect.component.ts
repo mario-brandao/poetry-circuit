@@ -25,6 +25,7 @@ import {
   Camera,
   Clock,
   Color,
+  ColorRepresentation,
   Group,
   PositionalAudio,
   Scene,
@@ -41,7 +42,7 @@ interface config {
   scale: number[];
   position: number[];
   rotation: number[];
-  color: any;
+  color: ColorRepresentation;
 }
 
 @Component({
@@ -69,6 +70,7 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
 
   logs: string[] = [];
 
+  protected progress: string = '';
   private writer: string = '';
   private poem: string = '';
   private markerConfigurations: config;
@@ -77,17 +79,20 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     // TODO: fix load and reload
-    this.route.queryParams.subscribe((params) => {
-      const writerParam = params['writer'] || 'ascenso-ferreira';
-      const poemParam = params['poem'] || 'maracatu';
-      const paramsChanged =
-        this.writer !== writerParam || this.poem !== poemParam;
+    // this.route.queryParams.subscribe((params) => {
+    //   const writerParam = params['writer'] || 'ascenso-ferreira';
+    //   const poemParam = params['poem'] || 'maracatu';
+    //   const paramsChanged =
+    //     this.writer !== writerParam || this.poem !== poemParam;
 
-      if (paramsChanged) {
-        this.resetViewParams(writerParam, poemParam);
-        this.initializeAR();
-      }
-    });
+    //   if (paramsChanged) {
+    //     this.resetViewParams(writerParam, poemParam);
+    //     this.initializeAR();
+    //   }
+    // });
+
+    this.resetViewParams('ascenso-ferreira', 'maracatu');
+    this.initializeAR();
   }
 
   ngOnDestroy(): void {
@@ -99,13 +104,16 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     this.poem = poem;
     this.markerConfigurations = {
       patternUrl: 'assets/pattern-cp.patt',
-      // patternUrl: 'assets/libs/data/letterA.patt',
-      modelUrl: `assets/writers-media/${this.writer}/${this.poem}.glb`,
       audioUrl: `assets/writers-media/${this.writer}/${this.poem}.mp3`,
+      // modelUrl: `assets/writers-media/${this.writer}/${this.poem}.glb`,
+      // patternUrl: 'assets/libs/data/letterA.patt',
+      // modelUrl: `assets/writers-media/ascenso-ferreira/maracatu-BROKEN.fbx`,
+      // modelUrl: `assets/3d/antonio-maria/cafe-com-leite-BROKEN.fbx`,
+      modelUrl: `assets/Samba Dancing.fbx`,
       scale: [3, 3, 3],
       position: [0, 0, 0],
       rotation: [-1, 0, 0],
-      color: 0xff0000,
+      color: 0xffffff,
     };
 
     console.log(
@@ -155,12 +163,11 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   }
 
   private initializeAR(): void {
-    this.clearAR();
+    // this.clearAR();
 
     this.scene = new Scene();
-
-    const ambientLight = new AmbientLight(0xcccccc, 0.5);
-    this.scene.add(ambientLight);
+    // const ambientLight = new AmbientLight(0xcccccc, 0.5);
+    // this.scene.add(ambientLight);
 
     this.camera = new Camera();
     this.scene.add(this.camera);
@@ -199,27 +206,14 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     this.animate();
   }
 
-  private addMarker(): void {
-    const markerRoot = new Group();
-    this.scene.add(markerRoot);
-
-    const markerControls = new THREEx.ArMarkerControls(
-      this.arToolkitContext,
-      markerRoot,
-      {
-        type: 'pattern',
-        patternUrl: this.markerConfigurations.patternUrl,
-      }
-    );
-
-    // Carregar modelo 3D
+  loadMock(markerRoot): void {
     const loader = new GLTFLoader();
     loader.load(
-      this.markerConfigurations.modelUrl,
+      // 'assets/writers-media/ascenso-ferreira/maracatu.glb', // OK - pichado
+      // 'assets/writers-media/ascenso-ferreira/trem-de-alagoas.glb', // OK
+      'assets/writers-media/antonio-maria/cafe-com-leite.glb', // de costas e tudo branco
+      // 'assets/writers-media/antonio-maria/ninguem-me-ama.glb', // de costas e tudo branco
       (gltf: GLTF) => {
-        console.log(`loaded model ${this.markerConfigurations.modelUrl}`);
-        this.logs.push(`loaded model ${this.markerConfigurations.modelUrl}`);
-
         const model = gltf.scene;
         const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
         const [positionX, positionY, positionZ] =
@@ -240,21 +234,97 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
 
         markerRoot.add(model);
 
-        console.log(markerRoot, model);
-        this.model = model;
-
+        // ideal branco: 0xfffff
+        const ambientLight = new AmbientLight(0xfffff, 1);
+        markerRoot.add(ambientLight);
         this.addAudio(this.markerConfigurations.audioUrl);
-
-        console.log(markerRoot);
       },
-      (x) => {
-        if (x.type !== 'progress') {
-          console.log('error', x);
+      (xhr) => {
+        this.progress = (xhr.loaded / xhr.total) * 100 + '% loaded';
+        // this.log.sendLog('loading', progress);
+      },
+      (error) => {
+        if (error.type !== 'progress') {
+          console.log('error', error);
           this.logs.push('load error');
-          this.logs.push(JSON.stringify(x));
+          this.logs.push(JSON.stringify(error));
         }
       }
     );
+  }
+
+  private addMarker(): void {
+    const markerRoot = new Group();
+    this.scene.add(markerRoot);
+
+    const markerControls = new THREEx.ArMarkerControls(
+      this.arToolkitContext,
+      markerRoot,
+      {
+        type: 'pattern',
+        patternUrl: this.markerConfigurations.patternUrl,
+      }
+    );
+
+    this.loadMock(markerRoot);
+
+    // Carregar modelo 3D
+    // const loader = new FBXLoader();
+    // loader.load(
+    //   this.markerConfigurations.modelUrl,
+    //   (group: Group) => {
+    //     const debugCube = new Mesh(
+    //       new BoxGeometry(10, 10, 10),
+    //       new MeshBasicMaterial({ color: 0xff0000, wireframe: true })
+    //     );
+    //     debugCube.position.set(0, -40, 0);
+    //     this.scene.add(debugCube);
+
+    //     console.log(`loaded model ${this.markerConfigurations.modelUrl}`);
+    //     this.logs.push(`loaded model ${this.markerConfigurations.modelUrl}`);
+
+    //     const model = group;
+    //     // const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
+    //     // const [positionX, positionY, positionZ] =
+    //     //   this.markerConfigurations.position;
+    //     // const [rotationX, rotationY, rotationZ] =
+    //     //   this.markerConfigurations.rotation;
+    //     // model.scale.set(scaleX, scaleY, scaleZ);
+    //     model.position.set(0, -500, -100);
+    //     // model.rotation.set(rotationX, rotationY, rotationZ);
+
+    //     this.logs.push(
+    //       'position',
+    //       `${group.position.x}-${group.position.y}-${group.position.z}`
+    //     );
+    //     this.logs.push(
+    //       'scale',
+    //       `${group.scale.x}-${group.scale.y}-${group.scale.z}`
+    //     );
+
+    //     // Configurar animações, se existirem
+    //     // if (group.animations && group.animations.length > 0) {
+    //     //   const mixer = new AnimationMixer(model);
+    //     //   group.animations.forEach((clip) => mixer.clipAction(clip).play());
+    //     //   // Salve o mixer para atualização no loop de animação, se necessário
+    //     //   this.mixer = mixer;
+    //     // }
+
+    //     // markerRoot.add(model);
+
+    //     this.model = model;
+    //     markerRoot.add(this.model);
+
+    //     // this.addAudio(this.markerConfigurations.audioUrl);
+    //   },
+    //   (x) => {
+    //     if (x.type !== 'progress') {
+    //       console.log('error', x);
+    //       this.logs.push('load error');
+    //       this.logs.push(JSON.stringify(x));
+    //     }
+    //   }
+    // );
 
     // Opcional: Adicionar cubo ou textura básica para depuração
     // const geometry = new BoxGeometry(1, 1, 1);
@@ -265,7 +335,7 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     // });
     // const mesh = new Mesh(geometry, material);
     // markerRoot.add(mesh);
-    console.log(this.scene);
+    // console.log(this.scene);
   }
 
   private addAudio(audioPath: string): void {
