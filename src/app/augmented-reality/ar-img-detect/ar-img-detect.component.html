@@ -1,6 +1,7 @@
 <div style="position: absolute">
-  <p>{{ progress }}</p>
   <p *ngFor="let log of logs">{{ log }}</p>
 </div>
 
 <div #rendererContainer></div>
+
+<app-loading-overlay [loaded]="loaded" [total]="total"></app-loading-overlay>

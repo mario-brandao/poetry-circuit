@@ -1,1 +1,18 @@
-<router-outlet></router-outlet>
+<app-ar-img-detect></app-ar-img-detect>
+
+<div class="buttons-container">
+  <button
+    class="poesia-button"
+    [class.active]="activeButton === 1"
+    (click)="setActiveButton(1)"
+  >
+    Poesia 1
+  </button>
+  <button
+    class="poesia-button"
+    [class.active]="activeButton === 2"
+    (click)="setActiveButton(2)"
+  >
+    Poesia 2
+  </button>
+</div>

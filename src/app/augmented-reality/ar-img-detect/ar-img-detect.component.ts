@@ -70,7 +70,8 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
 
   logs: string[] = [];
 
-  protected progress: string = '';
+  protected loaded: number;
+  protected total: number;
   private writer: string = '';
   private poem: string = '';
   private markerConfigurations: config;
@@ -209,9 +210,9 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   loadMock(markerRoot): void {
     const loader = new GLTFLoader();
     loader.load(
-      // 'assets/writers-media/ascenso-ferreira/maracatu.glb', // OK - pichado
+      'assets/writers-media/ascenso-ferreira/maracatu.glb', // OK - pichado
       // 'assets/writers-media/ascenso-ferreira/trem-de-alagoas.glb', // OK
-      'assets/writers-media/antonio-maria/cafe-com-leite.glb', // de costas e tudo branco
+      // 'assets/writers-media/antonio-maria/cafe-com-leite.glb', // de costas e tudo branco
       // 'assets/writers-media/antonio-maria/ninguem-me-ama.glb', // de costas e tudo branco
       (gltf: GLTF) => {
         const model = gltf.scene;
@@ -240,8 +241,8 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
         this.addAudio(this.markerConfigurations.audioUrl);
       },
       (xhr) => {
-        this.progress = (xhr.loaded / xhr.total) * 100 + '% loaded';
-        // this.log.sendLog('loading', progress);
+        this.loaded = xhr.loaded;
+        this.total = xhr.total;
       },
       (error) => {
         if (error.type !== 'progress') {
