@@ -80,20 +80,21 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     // TODO: fix load and reload
-    // this.route.queryParams.subscribe((params) => {
-    //   const writerParam = params['writer'] || 'ascenso-ferreira';
-    //   const poemParam = params['poem'] || 'maracatu';
-    //   const paramsChanged =
-    //     this.writer !== writerParam || this.poem !== poemParam;
+    this.route.queryParams.subscribe((params) => {
+      const writerParam = params['writer'] || 'ascenso-ferreira';
+      const poemParam = params['poem'] || 'maracatu';
+      const paramsChanged =
+        this.writer !== writerParam || this.poem !== poemParam;
 
-    //   if (paramsChanged) {
-    //     this.resetViewParams(writerParam, poemParam);
-    //     this.initializeAR();
-    //   }
-    // });
+      if (paramsChanged) {
+        this.logs.push('params changed', writerParam, poemParam);
+        this.resetViewParams(writerParam, poemParam);
+        this.initializeAR();
+      }
+    });
 
-    this.resetViewParams('ascenso-ferreira', 'maracatu');
-    this.initializeAR();
+    // this.resetViewParams('ascenso-ferreira', 'maracatu');
+    // this.initializeAR();
   }
 
   ngOnDestroy(): void {
@@ -164,7 +165,7 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   }
 
   private initializeAR(): void {
-    // this.clearAR();
+    this.clearAR();
 
     this.scene = new Scene();
     // const ambientLight = new AmbientLight(0xcccccc, 0.5);

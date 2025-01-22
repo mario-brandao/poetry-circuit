@@ -1,32 +1,32 @@
 .buttons-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   display: flex;
   justify-content: center;
   gap: 10px;
   padding: 10px;
-  background-color: #000; // Fundo preto da seção
+  background-color: #000;
 }
 
-.poesia-button {
-  background-color: #ccc; // Cinza para estado inativo
+.poem-button {
   border: none;
   border-radius: 5px;
   padding: 10px 20px;
   font-size: 16px;
+  background: white;
   color: #000;
   cursor: pointer;
   transition: background-color 0.3s ease;
 
   &.active {
-    background-color: #ffc107; // Amarelo para estado ativo
-    color: #000;
+    background: #ffc107;
+    color: white;
   }
 
-  &:hover {
-    background-color: #ddd; // Cinza mais claro no hover
-  }
-
-  &:disabled {
-    background-color: #444; // Cinza escuro para desativado
-    cursor: not-allowed;
+  &.visited:not(.active) {
+    background: #d9d9d9;
+    color: #979797;
   }
 }
