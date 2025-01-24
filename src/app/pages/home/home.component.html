@@ -1,13 +1,10 @@
 <section class="flex flex-col w-screen h-screen bg-black">
   <app-header></app-header>
-  <div class="overflow-y-scroll">
-    <app-map
-      [statues]="statues$ | async"
-      [visitedStatues]="visitedStatues$ | async"
-    ></app-map>
+  <div class="overflow-y-scroll" *ngIf="!loadingRequests">
+    <app-map [statues]="statues" [visitedStatues]="visitedStatues"></app-map>
     <app-statues
-      [statues]="statues$ | async"
-      [visitedStatues]="visitedStatues$ | async"
+      [statues]="statues"
+      [visitedStatues]="visitedStatues"
     ></app-statues>
   </div>
 </section>

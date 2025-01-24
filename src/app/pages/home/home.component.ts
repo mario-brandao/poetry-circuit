@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Observable } from 'dexie';
+import { combineLatest } from 'rxjs';
 import { StatuesService } from 'src/app/services/statues/statues.service';
 import { Statue } from 'src/db';
 
@@ -9,13 +9,24 @@ import { Statue } from 'src/db';
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
-  statues$: Observable<Statue[]>;
-  visitedStatues$: Observable<Statue[]>;
+  statues: Statue[];
+  visitedStatues: Statue[];
+
+  loadingRequests = false;
 
   constructor(private statuesService: StatuesService) {}
 
   ngOnInit(): void {
-    this.statues$ = this.statuesService.statues$;
-    this.visitedStatues$ = this.statuesService.visitedStatues$;
+    this.loadingRequests = true;
+    combineLatest([
+      this.statuesService.statues$,
+      this.statuesService.visitedStatues$,
+    ]).subscribe({
+      next: ([statues, visitedStatues]) => {
+        this.statues = statues;
+        this.visitedStatues = visitedStatues;
+        this.loadingRequests = false;
+      },
+    });
   }
 }

@@ -2,6 +2,7 @@ import Dexie, { Table } from 'dexie';
 import writersData from './writers.json';
 
 export interface Statue {
+  id?: number;
   name: string;
   location: string;
   coordinates: string[];

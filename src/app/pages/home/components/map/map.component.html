@@ -31,7 +31,7 @@
       (mapMousemove)="move($event)"
     >
       <map-marker
-        *ngFor="let marker of getMarkers()"
+        *ngFor="let marker of markers"
         [position]="marker.position"
         [label]="marker.label"
         [title]="marker.title"
