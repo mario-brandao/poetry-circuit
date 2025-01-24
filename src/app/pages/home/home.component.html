@@ -1,7 +1,13 @@
 <section class="flex flex-col w-screen h-screen bg-black">
   <app-header></app-header>
   <div class="overflow-y-scroll">
-    <app-map></app-map>
-    <app-statues></app-statues>
+    <app-map
+      [statues]="statues$ | async"
+      [visitedStatues]="visitedStatues$ | async"
+    ></app-map>
+    <app-statues
+      [statues]="statues$ | async"
+      [visitedStatues]="visitedStatues$ | async"
+    ></app-statues>
   </div>
 </section>

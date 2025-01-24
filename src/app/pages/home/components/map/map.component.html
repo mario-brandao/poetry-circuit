@@ -30,6 +30,14 @@
       (mapClick)="moveMap($event)"
       (mapMousemove)="move($event)"
     >
+      <map-marker
+        *ngFor="let marker of getMarkers()"
+        [position]="marker.position"
+        [label]="marker.label"
+        [title]="marker.title"
+        [options]="marker.options"
+        (mapClick)="onMarkerClick(marker)"
+      ></map-marker>
     </google-map>
   </div>
 </div>

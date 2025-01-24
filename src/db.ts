@@ -1,9 +1,10 @@
 import Dexie, { Table } from 'dexie';
-import writtersData from './writters.json';
+import writersData from './writers.json';
 
 export interface Statue {
   name: string;
   location: string;
+  coordinates: string[];
   subtitle: string;
   rangeLife: string;
   visited: boolean;
@@ -12,13 +13,20 @@ export interface Statue {
   cover: string;
 }
 
+export interface User {
+  id: number;
+  firstAccess: boolean;
+}
+
 export class AppDB extends Dexie {
   statues!: Table<Statue, number>;
+  user!: Table<User, number>;
 
   constructor() {
     super('ngdexieliveQuery');
     this.version(1).stores({
       statues: '++id',
+      user: 'id',
     });
     this.on('populate', () => this.populate());
   }
@@ -26,26 +34,33 @@ export class AppDB extends Dexie {
   async populate() {
     await db.statues.bulkAdd([
       {
-        name: writtersData[0].name,
-        location: writtersData[0].location,
-        subtitle: writtersData[0].subtitle,
-        rangeLife: writtersData[0].rangeLife,
-        visited: writtersData[0].visited,
-        bio: writtersData[0].bio,
-        images: writtersData[0].images,
-        cover: writtersData[0].cover,
+        name: writersData[0].name,
+        location: writersData[0].location,
+        coordinates: writersData[0].coordinates,
+        subtitle: writersData[0].subtitle,
+        rangeLife: writersData[0].rangeLife,
+        visited: writersData[0].visited,
+        bio: writersData[0].bio,
+        images: writersData[0].images,
+        cover: writersData[0].cover,
       },
       {
-        name: writtersData[1].name,
-        location: writtersData[1].location,
-        subtitle: writtersData[1].subtitle,
-        rangeLife: writtersData[1].rangeLife,
-        visited: writtersData[1].visited,
-        bio: writtersData[1].bio,
-        images: writtersData[1].images,
-        cover: writtersData[1].cover,
+        name: writersData[1].name,
+        location: writersData[1].location,
+        coordinates: writersData[1].coordinates,
+        subtitle: writersData[1].subtitle,
+        rangeLife: writersData[1].rangeLife,
+        visited: writersData[1].visited,
+        bio: writersData[1].bio,
+        images: writersData[1].images,
+        cover: writersData[1].cover,
       },
     ]);
+
+    await db.user.add({
+      id: 1,
+      firstAccess: true,
+    });
   }
 }
 

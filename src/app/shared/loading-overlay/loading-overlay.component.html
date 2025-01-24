@@ -1,0 +1,12 @@
+<div class="overlay" *ngIf="showOverlay" [@fadeOut]>
+  <div class="loading-container">
+    <div class="progress-bar">
+      <div
+        class="progress"
+        [style.width]="progress + '%'"
+        [@progressAnimation]="progress"
+      ></div>
+    </div>
+    <p class="loading-text">{{ progress.toFixed(2) }}% loaded</p>
+  </div>
+</div>

@@ -15,9 +15,9 @@ import { LandingComponent } from './pages/landing/landing.component';
 import { HeaderComponent } from './pages/shared/components/header/header.component';
 import { SideMenuComponent } from './pages/shared/components/side-menu/side-menu.component';
 import { StatueCardComponent } from './pages/shared/components/statue-card/statue-card.component';
-import { PicsCarouselComponent } from './pages/writter-profile/pics-carousel/pics-carousel.component';
-import { WritterProfileComponent } from './pages/writter-profile/writter-profile.component';
 import { TutorialComponent } from './pages/tutorial/tutorial.component';
+import { PicsCarouselComponent } from './pages/writer-profile/pics-carousel/pics-carousel.component';
+import { WriterProfileComponent } from './pages/writer-profile/writer-profile.component';
 
 register();
 
@@ -32,7 +32,7 @@ register();
     StatuesComponent,
     StatueCardComponent,
     AlbumComponent,
-    WritterProfileComponent,
+    WriterProfileComponent,
     PicsCarouselComponent,
     TutorialComponent,
   ],
