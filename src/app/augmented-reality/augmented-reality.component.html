@@ -1,1 +1,13 @@
-<router-outlet></router-outlet>
+<app-ar-img-detect></app-ar-img-detect>
+
+<div *ngIf="poemOptions" class="buttons-container">
+  <button
+    *ngFor="let poem of poemOptions; let i = index"
+    class="poem-button"
+    [class.active]="activeButton === i"
+    [class.visited]="poem.visited"
+    (click)="selectPoem(i)"
+  >
+    Poesia {{ i + 1 }}
+  </button>
+</div>

@@ -1,0 +1,32 @@
+.buttons-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  background-color: #000;
+}
+
+.poem-button {
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background: white;
+  color: #000;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &.active {
+    background: #ffc107;
+    color: white;
+  }
+
+  &.visited:not(.active) {
+    background: #d9d9d9;
+    color: #979797;
+  }
+}

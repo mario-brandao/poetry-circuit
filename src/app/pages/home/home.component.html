@@ -1,5 +1,10 @@
-<section class="flex flex-col w-screen h-screen overflow-hidden bg-black">
+<section class="flex flex-col w-screen h-screen bg-black">
   <app-header></app-header>
-  <app-map></app-map>
-  <app-statues></app-statues>
+  <div class="overflow-y-scroll" *ngIf="!loadingRequests">
+    <app-map [statues]="statues" [visitedStatues]="visitedStatues"></app-map>
+    <app-statues
+      [statues]="statues"
+      [visitedStatues]="visitedStatues"
+    ></app-statues>
+  </div>
 </section>

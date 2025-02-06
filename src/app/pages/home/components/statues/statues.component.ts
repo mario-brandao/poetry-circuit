@@ -1,6 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { Observable } from 'dexie';
-import { StatuesService } from 'src/app/services/statues/statues.service';
+import { Component, Input } from '@angular/core';
 import { Statue } from 'src/db';
 
 @Component({
@@ -8,12 +6,7 @@ import { Statue } from 'src/db';
   templateUrl: './statues.component.html',
   styleUrls: ['./statues.component.scss'],
 })
-export class StatuesComponent implements OnInit {
-  statues$: Observable<Statue[]>;
-
-  constructor(private statuesService: StatuesService) {}
-
-  ngOnInit(): void {
-    this.statues$ = this.statuesService.statues$;
-  }
+export class StatuesComponent {
+  @Input() statues: Statue[];
+  @Input() visitedStatues: Statue[];
 }
