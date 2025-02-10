@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "node server.js",
     "start:local": "ng serve --host 0.0.0.0 --ssl true --ssl-cert ./server.crt --ssl-key ./server.key --port 443",
     "build": "ng build --configuration=production",
     "build:local": "ng build --configuration=production --stats-json && npx webpack-bundle-analyzer dist/poetry-circuit/stats.json",
