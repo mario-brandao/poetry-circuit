@@ -1,19 +1,15 @@
+// Install express server
 const express = require("express");
-const https = require("https");
-const fs = require("fs");
+const path = require("path");
 
-const compression = require("compression");
 const app = express();
-app.use(compression());
-const options = {
-  key: fs.readFileSync("./server.key"),
-  cert: fs.readFileSync("./server.crt"),
-};
 
-app.get("/", (req, res) => {
-  res.send("Hello, HTTPS World!");
+// Serve only the static files form the dist directory
+app.use(express.static(__dirname + "/dist/poetry-circuit"));
+
+app.get("/*", function (req, res) {
+  res.sendFile(path.join(__dirname + "/dist/poetry-circuit/index.html"));
 });
 
-https.createServer(options, app).listen(443, () => {
-  console.log("Servidor rodando em https://localhost:443");
-});
+// Start the app by listening on the default Heroku port
+app.listen(process.env.PORT || 8080);
