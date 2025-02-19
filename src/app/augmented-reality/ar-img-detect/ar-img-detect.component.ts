@@ -107,8 +107,8 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     this.poem = poem;
     this.markerConfigurations = {
       patternUrl: `${environment.baseAssetsUrl}/pattern-cp.patt`,
-      audioUrl: `${environment.baseAssetsUrl}/writers-media/${this.writer}/${this.poem}.mp3`,
-      modelUrl: `${environment.baseAssetsUrl}/writers-media/${this.writer}/${this.poem}.glb`,
+      audioUrl: `assets/writers-media/${this.writer}/${this.poem}.mp3`,
+      modelUrl: `assets/writers-media/${this.writer}/${this.poem}.glb`,
       // patternUrl: 'assets/libs/data/letterA.patt',
       // modelUrl: `assets/writers-media/ascenso-ferreira/maracatu-BROKEN.fbx`,
       // modelUrl: `assets/3d/antonio-maria/cafe-com-leite-BROKEN.fbx`,
