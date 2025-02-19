@@ -199,7 +199,6 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
       );
     });
 
-    // TODO: fix browser issue
     this.audioListener = new AudioListener();
     this.camera.add(this.audioListener);
     this.addMarker();
@@ -212,7 +211,7 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   loadMock(markerRoot): void {
     const loader = new GLTFLoader();
     loader.load(
-      `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/maracatu.glb`, // OK - pichado
+      `assets/writers-media/ascenso-ferreira/maracatu.glb`, // OK - pichado
       // `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/trem-de-alagoas.glb`, // OK
       // `${environment.baseAssetsUrl}/writers-media/antonio-maria/cafe-com-leite.glb`, // de costas e tudo branco
       // `${environment.baseAssetsUrl}/writers-media/antonio-maria/ninguem-me-ama.glb`, // de costas e tudo branco
