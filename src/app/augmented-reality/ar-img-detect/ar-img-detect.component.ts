@@ -6,6 +6,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { environment } from 'src/environments/environment';
 
 // import * as ArtoolkitMin from 'src/assets/jsartoolkit5/artoolkit.min.js';
 // import * as ArtoolkitApi from 'src/assets/jsartoolkit5/artoolkit.api.js';
@@ -105,13 +106,13 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     this.writer = writer;
     this.poem = poem;
     this.markerConfigurations = {
-      patternUrl: 'assets/pattern-cp.patt',
-      audioUrl: `assets/writers-media/${this.writer}/${this.poem}.mp3`,
-      // modelUrl: `assets/writers-media/${this.writer}/${this.poem}.glb`,
+      patternUrl: `${environment.baseAssetsUrl}/pattern-cp.patt`,
+      audioUrl: `${environment.baseAssetsUrl}/writers-media/${this.writer}/${this.poem}.mp3`,
+      modelUrl: `${environment.baseAssetsUrl}/writers-media/${this.writer}/${this.poem}.glb`,
       // patternUrl: 'assets/libs/data/letterA.patt',
       // modelUrl: `assets/writers-media/ascenso-ferreira/maracatu-BROKEN.fbx`,
       // modelUrl: `assets/3d/antonio-maria/cafe-com-leite-BROKEN.fbx`,
-      modelUrl: `assets/Samba Dancing.fbx`,
+      // modelUrl: `${environment.baseAssetsUrl}/${this.writer}/${this.poem}.glb`,
       scale: [3, 3, 3],
       position: [0, 0, 0],
       rotation: [-1, 0, 0],
@@ -211,10 +212,10 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   loadMock(markerRoot): void {
     const loader = new GLTFLoader();
     loader.load(
-      'assets/writers-media/ascenso-ferreira/maracatu.glb', // OK - pichado
-      // 'assets/writers-media/ascenso-ferreira/trem-de-alagoas.glb', // OK
-      // 'assets/writers-media/antonio-maria/cafe-com-leite.glb', // de costas e tudo branco
-      // 'assets/writers-media/antonio-maria/ninguem-me-ama.glb', // de costas e tudo branco
+      `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/maracatu.glb`, // OK - pichado
+      // `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/trem-de-alagoas.glb`, // OK
+      // `${environment.baseAssetsUrl}/writers-media/antonio-maria/cafe-com-leite.glb`, // de costas e tudo branco
+      // `${environment.baseAssetsUrl}/writers-media/antonio-maria/ninguem-me-ama.glb`, // de costas e tudo branco
       (gltf: GLTF) => {
         const model = gltf.scene;
         const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
@@ -364,8 +365,13 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     this.logs.push('add audio 5');
 
     // Adicionar o áudio à cena (vinculado ao modelo)
-    this.model.add(this.positionalAudio);
-    this.logs.push('add audio 6');
+    try {
+      this.logs.push('add audio 6');
+      this.model.add(this.positionalAudio);
+    } catch (error) {
+      alert('Failed to start audio');
+      this.logs.push('failed to add audio to model');
+    }
 
     this.audioListener = new AudioListener();
     this.camera.add(this.audioListener);
