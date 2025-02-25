@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  NgZone,
   OnDestroy,
   ViewChild,
 } from '@angular/core';
@@ -23,15 +24,19 @@ import {
   AnimationMixer,
   AudioListener,
   AudioLoader,
+  BoxGeometry,
   Camera,
   Clock,
   Color,
   ColorRepresentation,
   Group,
+  Mesh,
+  MeshBasicMaterial,
   PositionalAudio,
   Scene,
   WebGLRenderer,
 } from 'three';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 declare const THREEx: any;
@@ -58,26 +63,27 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   private scene!: Scene;
   private camera!: Camera;
   private renderer!: WebGLRenderer;
-  private mixer!: THREE.AnimationMixer;
-  private model!: THREE.Group;
+  private mixer!: AnimationMixer;
+  private model!: Group;
   private audioListener!: AudioListener;
   private positionalAudio!: PositionalAudio;
   private clock!: Clock;
   private deltaTime!: number;
   private totalTime!: number;
+  private markerRoot: Group;
 
   private arToolkitSource: any;
   private arToolkitContext: any;
 
   logs: string[] = [];
-
+  protected loading = true;
   protected loaded: number;
   protected total: number;
   private writer: string = '';
   private poem: string = '';
   private markerConfigurations: config;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute, private zone: NgZone) {}
 
   ngAfterViewInit(): void {
     // TODO: fix load and reload
@@ -88,14 +94,18 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
         this.writer !== writerParam || this.poem !== poemParam;
 
       if (paramsChanged) {
-        this.logs.push('params changed', writerParam, poemParam);
+        this.log('params changed');
+
+        this.log('params changed', writerParam, poemParam);
         this.resetViewParams(writerParam, poemParam);
         this.initializeAR();
       }
     });
 
-    // this.resetViewParams('ascenso-ferreira', 'maracatu');
-    // this.initializeAR();
+    if (!this.markerConfigurations) {
+      this.resetViewParams('ascenso-ferreira', 'maracatu');
+      this.initializeAR();
+    }
   }
 
   ngOnDestroy(): void {
@@ -105,6 +115,9 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   resetViewParams(writer: string, poem: string): void {
     this.writer = writer;
     this.poem = poem;
+
+    this.log('setting marker config');
+
     this.markerConfigurations = {
       patternUrl: `${environment.baseAssetsUrl}/pattern-cp.patt`,
       audioUrl: `assets/writers-media/${this.writer}/${this.poem}.mp3`,
@@ -119,7 +132,7 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
       color: 0xffffff,
     };
 
-    console.log(
+    this.log(
       this.markerConfigurations.modelUrl,
       this.markerConfigurations.audioUrl
     );
@@ -166,210 +179,250 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   }
 
   private initializeAR(): void {
-    this.clearAR();
+    this.zone.runOutsideAngular(() => {
+      this.clearAR();
 
-    this.scene = new Scene();
-    // const ambientLight = new AmbientLight(0xcccccc, 0.5);
-    // this.scene.add(ambientLight);
+      this.scene = new Scene();
+      // const ambientLight = new AmbientLight(0xcccccc, 0.5);
+      // this.scene.add(ambientLight);
 
-    this.camera = new Camera();
-    this.scene.add(this.camera);
+      this.camera = new Camera();
+      this.scene.add(this.camera);
 
-    this.renderer = new WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setClearColor(new Color('lightgrey'), 0);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+      this.renderer = new WebGLRenderer({ antialias: true, alpha: true });
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setClearColor(new Color('lightgrey'), 0);
+      this.renderer.setPixelRatio(window.devicePixelRatio);
 
-    this.rendererContainer.nativeElement.appendChild(this.renderer.domElement);
-
-    this.clock = new Clock();
-    this.deltaTime = 0;
-    this.totalTime = 0;
-
-    this.arToolkitSource = new THREEx.ArToolkitSource({ sourceType: 'webcam' });
-    this.arToolkitSource.init(() => this.onResize());
-
-    this.arToolkitContext = new THREEx.ArToolkitContext({
-      cameraParametersUrl: 'assets/libs/data/camera_para.dat',
-      detectionMode: 'mono',
-    });
-    this.arToolkitContext.init(() => {
-      this.camera.projectionMatrix.copy(
-        this.arToolkitContext.getProjectionMatrix()
+      this.rendererContainer.nativeElement.appendChild(
+        this.renderer.domElement
       );
+
+      this.clock = new Clock();
+      this.deltaTime = 0;
+      this.totalTime = 0;
+
+      this.arToolkitSource = new THREEx.ArToolkitSource({
+        sourceType: 'webcam',
+      });
+      this.arToolkitSource.init(() => this.onResize());
+
+      this.arToolkitContext = new THREEx.ArToolkitContext({
+        cameraParametersUrl: 'assets/libs/data/camera_para.dat',
+        detectionMode: 'mono',
+      });
+      this.arToolkitContext.init(() => {
+        this.camera.projectionMatrix.copy(
+          this.arToolkitContext.getProjectionMatrix()
+        );
+      });
+
+      this.audioListener = new AudioListener();
+      this.camera.add(this.audioListener);
+      this.addMarker();
+
+      window.addEventListener('resize', () => this.onResize());
+
+      this.animate();
     });
-
-    this.audioListener = new AudioListener();
-    this.camera.add(this.audioListener);
-    this.addMarker();
-
-    window.addEventListener('resize', () => this.onResize());
-
-    this.animate();
   }
 
-  loadMock(markerRoot): void {
-    const loader = new GLTFLoader();
-    loader.load(
-      `assets/writers-media/ascenso-ferreira/maracatu.glb`, // OK - pichado
-      // `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/trem-de-alagoas.glb`, // OK
-      // `${environment.baseAssetsUrl}/writers-media/antonio-maria/cafe-com-leite.glb`, // de costas e tudo branco
-      // `${environment.baseAssetsUrl}/writers-media/antonio-maria/ninguem-me-ama.glb`, // de costas e tudo branco
-      (gltf: GLTF) => {
-        const model = gltf.scene;
-        const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
-        const [positionX, positionY, positionZ] =
-          this.markerConfigurations.position;
-        const [rotationX, rotationY, rotationZ] =
-          this.markerConfigurations.rotation;
-        model.scale.set(scaleX, scaleY, scaleZ);
-        model.position.set(positionX, positionY, positionZ);
-        model.rotation.set(rotationX, rotationY, rotationZ);
+  private getLoader(
+    modelUrl: string
+  ):
+    | [
+        FBXLoader | GLTFLoader,
+        (object: GLTF | Group) => void,
+        (event: ProgressEvent) => void,
+        (event: ErrorEvent) => void
+      ]
+    | null {
+    const extension = modelUrl.split('.').pop()?.toLowerCase();
 
-        // Configurar animações, se existirem
-        if (gltf.animations && gltf.animations.length > 0) {
-          const mixer = new AnimationMixer(model);
-          gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
-          // Salve o mixer para atualização no loop de animação, se necessário
-          this.mixer = mixer;
-        }
+    switch (extension) {
+      case 'glb':
+        return [
+          new GLTFLoader(),
+          this.glftCallback.bind(this),
+          this.progress.bind(this),
+          this.error.bind(this),
+        ];
+      case 'fbx':
+        return [
+          new FBXLoader(),
+          this.fbxCallback.bind(this),
+          this.progress.bind(this),
+          this.error.bind(this),
+        ];
+      default:
+        alert(`Extensão de modelo não suportada: ${extension}`);
+        return null;
+    }
+  }
 
-        markerRoot.add(model);
+  glftCallback(gltf: GLTF): void {
+    const model = gltf.scene;
+    const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
+    const [positionX, positionY, positionZ] =
+      this.markerConfigurations.position;
+    const [rotationX, rotationY, rotationZ] =
+      this.markerConfigurations.rotation;
+    model.scale.set(scaleX, scaleY, scaleZ);
+    model.position.set(positionX, positionY, positionZ);
+    model.rotation.set(rotationX, rotationY, rotationZ);
 
-        // ideal branco: 0xfffff
-        const ambientLight = new AmbientLight(0xfffff, 1);
-        markerRoot.add(ambientLight);
-        this.addAudio(this.markerConfigurations.audioUrl);
-      },
-      (xhr) => {
-        this.loaded = xhr.loaded;
-        this.total = xhr.total;
-      },
-      (error) => {
-        if (error.type !== 'progress') {
-          console.log('error', error);
-          this.logs.push('load error');
-          this.logs.push(JSON.stringify(error));
-        }
-      }
+    // Configurar animações, se existirem
+    if (gltf.animations && gltf.animations.length > 0) {
+      const mixer = new AnimationMixer(model);
+      gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+      // Salve o mixer para atualização no loop de animação, se necessário
+      this.mixer = mixer;
+    }
+
+    this.markerRoot.add(model);
+
+    const ambientLight = new AmbientLight(0xfffff, 1);
+    this.markerRoot.add(ambientLight);
+    this.addAudio(this.markerConfigurations.audioUrl);
+    this.loading = false;
+  }
+
+  fbxCallback(group: Group): void {
+    const debugCube = new Mesh(
+      new BoxGeometry(10, 10, 10),
+      new MeshBasicMaterial({ color: 0xff0000, wireframe: true })
     );
+    debugCube.position.set(0, -40, 0);
+    this.scene.add(debugCube);
+
+    // this.log(`loaded model ${this.markerConfigurations.modelUrl}`);
+
+    const model = group;
+    model.position.set(0, -500, -100);
+
+    // this.log(
+    //   'position',
+    //   `${group.position.x}-${group.position.y}-${group.position.z}`
+    // );
+    // this.log('scale', `${group.scale.x}-${group.scale.y}-${group.scale.z}`);
+
+    // Configurar animações, se existirem
+    if (group.animations && group.animations.length > 0) {
+      const mixer = new AnimationMixer(model);
+      group.animations.forEach((clip) => mixer.clipAction(clip).play());
+      // Salve o mixer para atualização no loop de animação, se necessário
+      this.mixer = mixer;
+    }
+
+    this.model = model;
+
+    this.markerRoot.add(this.model);
+
+    // const material =  new MeshStandardMaterial({ ...textures });
+
+    this.addAudio(this.markerConfigurations.audioUrl);
+
+    this.log('finished loading');
+
+    this.loading = false;
+  }
+
+  progress(xhr: ProgressEvent): void {
+    this.zone.run(() => {
+      this.loaded = xhr.loaded;
+      this.total = xhr.total;
+      this.log(this.total > 0 ? (this.loaded / this.total) * 100 : 0);
+    });
+  }
+
+  error(error: ErrorEvent): void {
+    console.log(error);
+
+    this.log('error', error);
+    if (error.type !== 'progress') {
+      this.log('error', error);
+      this.loading = false;
+    }
   }
 
   private addMarker(): void {
-    const markerRoot = new Group();
-    this.scene.add(markerRoot);
+    this.markerRoot = new Group();
+    this.scene.add(this.markerRoot);
 
     const markerControls = new THREEx.ArMarkerControls(
       this.arToolkitContext,
-      markerRoot,
+      this.markerRoot,
       {
         type: 'pattern',
         patternUrl: this.markerConfigurations.patternUrl,
       }
     );
 
-    this.loadMock(markerRoot);
-
     // Carregar modelo 3D
-    // const loader = new FBXLoader();
-    // loader.load(
-    //   this.markerConfigurations.modelUrl,
-    //   (group: Group) => {
-    //     const debugCube = new Mesh(
-    //       new BoxGeometry(10, 10, 10),
-    //       new MeshBasicMaterial({ color: 0xff0000, wireframe: true })
-    //     );
-    //     debugCube.position.set(0, -40, 0);
-    //     this.scene.add(debugCube);
+    this.loading = true;
 
-    //     console.log(`loaded model ${this.markerConfigurations.modelUrl}`);
-    //     this.logs.push(`loaded model ${this.markerConfigurations.modelUrl}`);
+    const mockURL = `assets/writers-media/ascenso-ferreira/maracatu.glb`; // OK - pichado
+    // const mockURL = `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/trem-de-alagoas.glb`; // OK
+    // const mockURL = `${environment.baseAssetsUrl}/writers-media/antonio-maria/cafe-com-leite.glb`; // de costas e tudo branco
+    // const mockURL = `${environment.baseAssetsUrl}/writers-media/antonio-maria/ninguem-me-ama.glb`; // de costas e tudo branco
 
-    //     const model = group;
-    //     // const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
-    //     // const [positionX, positionY, positionZ] =
-    //     //   this.markerConfigurations.position;
-    //     // const [rotationX, rotationY, rotationZ] =
-    //     //   this.markerConfigurations.rotation;
-    //     // model.scale.set(scaleX, scaleY, scaleZ);
-    //     model.position.set(0, -500, -100);
-    //     // model.rotation.set(rotationX, rotationY, rotationZ);
+    // FBX
+    // const mockURL = `assets/fbx-samples/spider/Spider.fbx`; // broken texture
+    // const mockURL = `assets/writers-media/antonio maria7.fbx`; // animação quebrada, n carrega
+    // const mockURL = `assets/writers-media/antonio maria7 - cafe com leite.fbx`; // animação quebrada, n carrega
 
-    //     this.logs.push(
-    //       'position',
-    //       `${group.position.x}-${group.position.y}-${group.position.z}`
-    //     );
-    //     this.logs.push(
-    //       'scale',
-    //       `${group.scale.x}-${group.scale.y}-${group.scale.z}`
-    //     );
+    const [loader, onLoad, onProgress, onError] = this.getLoader(mockURL);
+    loader.load(mockURL, onLoad, onProgress, onError);
 
-    //     // Configurar animações, se existirem
-    //     // if (group.animations && group.animations.length > 0) {
-    //     //   const mixer = new AnimationMixer(model);
-    //     //   group.animations.forEach((clip) => mixer.clipAction(clip).play());
-    //     //   // Salve o mixer para atualização no loop de animação, se necessário
-    //     //   this.mixer = mixer;
-    //     // }
+    // TODO: remove
+    // this.loadMockCube();
 
-    //     // markerRoot.add(model);
+    this.log(this.scene);
+  }
 
-    //     this.model = model;
-    //     markerRoot.add(this.model);
-
-    //     // this.addAudio(this.markerConfigurations.audioUrl);
-    //   },
-    //   (x) => {
-    //     if (x.type !== 'progress') {
-    //       console.log('error', x);
-    //       this.logs.push('load error');
-    //       this.logs.push(JSON.stringify(x));
-    //     }
-    //   }
-    // );
-
+  // TODO: remove
+  private loadMockCube(): void {
     // Opcional: Adicionar cubo ou textura básica para depuração
-    // const geometry = new BoxGeometry(1, 1, 1);
-    // const material = new MeshBasicMaterial({
-    //   color: this.markerConfigurations.color,
-    //   transparent: true,
-    //   opacity: 0.5,
-    // });
-    // const mesh = new Mesh(geometry, material);
-    // markerRoot.add(mesh);
-    // console.log(this.scene);
+    const geometry = new BoxGeometry(1, 1, 1);
+    const material = new MeshBasicMaterial({
+      color: this.markerConfigurations.color,
+      transparent: true,
+      opacity: 0.5,
+    });
+    const mesh = new Mesh(geometry, material);
+    this.markerRoot.add(mesh);
   }
 
   private addAudio(audioPath: string): void {
-    this.logs.push('add audio');
+    // this.log('add audio');
     // Carregar o arquivo de áudio
     const audioLoader = new AudioLoader();
     this.positionalAudio = new PositionalAudio(this.audioListener); // Usando PositionalAudio para um efeito 3D
 
-    this.logs.push('add audio 2');
+    // this.log('add audio 2');
 
     audioLoader.load(audioPath, (buffer) => {
-      this.logs.push('add audio 3');
+      // this.log('add audio 3');
 
       this.positionalAudio.setBuffer(buffer);
       this.positionalAudio.setLoop(true); // Configure se você quer que o áudio faça loop
       this.positionalAudio.setVolume(0.5); // Ajuste o volume
 
-      this.logs.push('add audio 4');
+      // this.log('add audio 4');
 
       // Reproduzir o áudio sincronizado com a animação
       this.positionalAudio.play();
     });
 
-    this.logs.push('add audio 5');
+    // this.log('add audio 5');
 
     // Adicionar o áudio à cena (vinculado ao modelo)
     try {
-      this.logs.push('add audio 6');
+      // this.log('add audio 6');
       this.model.add(this.positionalAudio);
     } catch (error) {
       alert('Failed to start audio');
-      this.logs.push('failed to add audio to model');
+      // this.log('failed to add audio to model');
     }
 
     this.audioListener = new AudioListener();
@@ -401,4 +454,9 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
 
     this.renderer.render(this.scene, this.camera);
   };
+
+  log(...log: any): void {
+    console.log(log);
+    this.logs.push(log);
+  }
 }

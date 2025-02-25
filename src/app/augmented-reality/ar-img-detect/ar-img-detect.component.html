@@ -4,4 +4,8 @@
 
 <div #rendererContainer></div>
 
-<app-loading-overlay [loaded]="loaded" [total]="total"></app-loading-overlay>
+<app-loading-overlay
+  *ngIf="loading"
+  [loaded]="loaded"
+  [total]="total"
+></app-loading-overlay>
