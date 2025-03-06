@@ -120,7 +120,8 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
 
     this.markerConfigurations = {
       patternUrl: `${environment.baseAssetsUrl}/pattern-cp.patt`,
-      audioUrl: `assets/writers-media/${this.writer}/${this.poem}.mp3`,
+      audioUrl: `${environment.baseAssetsUrl}/writers-media/${this.writer}/${this.poem}.mp3`,
+      // audioUrl: `assets/writers-media/${this.writer}/${this.poem}.mp3`,
       // modelUrl: `assets/writers-media/${this.writer}/${this.poem}.glb`,
       // patternUrl: 'assets/libs/data/letterA.patt',
       // modelUrl: `assets/writers-media/ascenso-ferreira/maracatu-BROKEN.fbx`,
