@@ -494,8 +494,9 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   }
 
   log(...log: any): void {
-    console.log(log);
-    this.logs.push(log);
+    // TODO: create flag for dev env only
+    // console.log(log);
+    // this.logs.push(log);
   }
 
   getAllTextures(group): void {
