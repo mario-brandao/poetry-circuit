@@ -5,11 +5,13 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
+import { overlayAnimations } from './loading-overlay.animations';
 
 @Component({
   selector: 'app-loading-overlay',
   templateUrl: './loading-overlay.component.html',
   styleUrls: ['./loading-overlay.component.scss'],
+  animations: overlayAnimations,
 })
 export class LoadingOverlayComponent implements OnInit, OnChanges {
   @Input() loaded = 0; // Valor carregado
@@ -24,6 +26,8 @@ export class LoadingOverlayComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.loaded || changes.total) {
+      console.log('updating progress');
+
       this.updateProgress();
     }
   }
