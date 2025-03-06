@@ -22,6 +22,7 @@ export class WriterProfileComponent implements OnInit {
     this.statue = await this.statuesService.getStatueData(
       Number(this.route.snapshot.params.id)
     );
+    await this.statuesService.markAsVisited(this.statue.id);
   }
 
   toAugmentedReality(): void {

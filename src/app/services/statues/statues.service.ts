@@ -18,4 +18,8 @@ export class StatuesService {
     const statues: Statue[] = await firstValueFrom(this.statues$ as any);
     return statues.find((statue) => statue['id'] === id);
   }
+
+  async markAsVisited(id: number, visited = true): Promise<void> {
+    await db.updateStatueData(id, { visited });
+  }
 }

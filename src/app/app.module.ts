@@ -7,6 +7,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 import { GoogleMapsModule } from '@angular/google-maps';
+import {
+  BrowserAnimationsModule,
+  NoopAnimationsModule,
+} from '@angular/platform-browser/animations';
 import { AlbumComponent } from './pages/album/album.component';
 import { MapComponent } from './pages/home/components/map/map.component';
 import { StatuesComponent } from './pages/home/components/statues/statues.component';
@@ -36,7 +40,13 @@ register();
     PicsCarouselComponent,
     TutorialComponent,
   ],
-  imports: [BrowserModule, AppRoutingModule, GoogleMapsModule],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    GoogleMapsModule,
+    BrowserAnimationsModule,
+    NoopAnimationsModule,
+  ],
   providers: [],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

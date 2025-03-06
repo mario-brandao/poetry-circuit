@@ -64,7 +64,7 @@ export class AugmentedRealityComponent implements OnInit {
   constructor(private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
-    const userConsent = confirm('Deseja iniciar o áudio e o vídeo?');
+    const userConsent = confirm(`Deseja iniciar a experiencia imersiva?`);
     if (userConsent) {
       this.handleRouteParams();
     }
