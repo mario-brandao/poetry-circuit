@@ -1,5 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject } from 'rxjs/internal/Subject';
+import { takeUntil } from 'rxjs/operators';
+import { Statue } from 'src/db';
+import { StatuesService } from '../services/statues/statues.service';
 
 interface Writer {
   name: string;
@@ -13,14 +17,15 @@ interface Writer {
   templateUrl: './augmented-reality.component.html',
   styleUrls: ['./augmented-reality.component.scss'],
 })
-export class AugmentedRealityComponent implements OnInit {
+export class AugmentedRealityComponent implements OnInit, OnDestroy {
   activeButton: number | null = null;
   poemOptions: Array<{
     title: string;
     normalizedTitle: string;
     visited: boolean;
   }>;
-  selectedWriter: Writer;
+  selectedWriter: Statue;
+  $destroy = new Subject<void>();
 
   // Mock de escritores e poemas
   // this.openCamera('ascenso-ferreira', 'maracatu'); // nao mexe a boca e pixação
@@ -28,123 +33,58 @@ export class AugmentedRealityComponent implements OnInit {
   // this.openCamera('antonio-maria', 'cafe-com-leite'); // nao mexe a boca
   // this.openCamera('antonio-maria', 'ninguem-me-ama'); // animação e posição quebradas
 
-  writers: Writer[] = [
-    {
-      name: 'Ascenso Ferreira',
-      normalizedName: 'ascenso-ferreira',
-      coordinates: { x: 0, y: 0 },
-      poems: [
-        { title: 'Maracatu', normalizedTitle: 'maracatu', visited: false },
-        {
-          title: 'Trem de alagoas',
-          normalizedTitle: 'trem-de-alagoas',
-          visited: false,
-        },
-      ],
-    },
-    {
-      name: 'Antonio Maria',
-      normalizedName: 'antonio-maria',
-      coordinates: { x: 1, y: 1 },
-      poems: [
-        {
-          title: 'Café com Leite',
-          normalizedTitle: 'cafe-com-leite',
-          visited: false,
-        },
-        {
-          title: 'Ninguém Me Ama',
-          normalizedTitle: 'ninguem-me-ama',
-          visited: false,
-        },
-      ],
-    },
-  ];
-
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private statuesService: StatuesService
+  ) {}
 
   ngOnInit(): void {
-    const userConsent = confirm(`Deseja iniciar a experiencia imersiva?`);
-    if (userConsent) {
-      this.handleRouteParams();
-    }
+    this.watchRouteParams();
   }
 
-  /**
-   * Lida com os parâmetros da rota e define o comportamento baseado neles.
-   */
-  handleRouteParams(): void {
-    this.route.queryParams.subscribe((params) => {
-      let { writer, poem } = params;
-
-      if (!writer) {
-        this.setDefaultWriter();
-      }
-
-      if (writer && !poem) {
-        this.selectedWriter = this.writers.find(
-          (w) => w.normalizedName === writer
-        );
-        this.setDefaultPoem();
-      }
-    });
+  ngOnDestroy(): void {
+    this.$destroy.next();
   }
 
-  setDefaultWriter(): void {
-    this.selectedWriter = this.writers[0];
-    this.setDefaultPoem();
+  watchRouteParams(): void {
+    this.route.params
+      .pipe(takeUntil(this.$destroy))
+      .subscribe(async (params) => {
+        if (params.writer) {
+          const userConsent = confirm(`Deseja iniciar a experiencia imersiva?`);
+          this.selectedWriter =
+            await this.statuesService.getStatueByNormalizedName(params.writer);
+          this.setDefaultPoem();
+        }
+      });
   }
 
   setDefaultPoem(): void {
-    const selectedWriter = this.writers.find(
-      (w) => w.normalizedName === this.selectedWriter.normalizedName
-    );
-    if (selectedWriter) {
-      this.poemOptions = selectedWriter.poems;
-      this.setActiveButton(0);
-      this.updateRouteParams(
-        selectedWriter.normalizedName,
-        selectedWriter.poems[0].normalizedTitle
-      );
+    if (!this.selectedWriter) {
+      this.router.navigate(['/home']);
     }
-  }
 
-  /**
-   * Atualiza os parâmetros da rota.
-   * @param writer Nome normalizado do escritor.
-   * @param poem Nome normalizado do poema.
-   */
-  updateRouteParams(writer: string, poem: string): void {
-    this.router.navigate([], {
-      queryParams: { writer, poem },
-      queryParamsHandling: 'merge',
-      skipLocationChange: true,
-    });
+    this.poemOptions = this.selectedWriter.poems;
+    this.openPoem(0);
   }
 
   /**
    * Alterna o botão ativo.
    * @param buttonNumber Número do botão a ser ativado.
    */
-  setActiveButton(buttonNumber: number): void {
+  openPoem(buttonNumber: number): void {
     if (this.activeButton === buttonNumber) {
-      this.activeButton = null;
-    } else {
-      this.activeButton = buttonNumber;
-      // TODO: push history
-      this.poemOptions[buttonNumber].visited = true;
+      return;
     }
-  }
 
-  /**
-   * Alterna o botão ativo.
-   * @param btnIndex Número do botão a ser ativado.
-   */
-  selectPoem(btnIndex: number): void {
-    this.setActiveButton(btnIndex);
-    this.updateRouteParams(
-      this.selectedWriter.normalizedName,
-      this.selectedWriter.poems[btnIndex].normalizedTitle
+    this.activeButton = buttonNumber;
+    this.statuesService.markPoemAsVisited(this.selectedWriter.id, buttonNumber);
+    this.router.navigate(
+      [this.selectedWriter.poems[buttonNumber].normalizedTitle],
+      {
+        relativeTo: this.route,
+      }
     );
   }
 }

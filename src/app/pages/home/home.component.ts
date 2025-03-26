@@ -23,6 +23,7 @@ export class HomeComponent {
       this.statuesService.visitedStatues$,
     ]).subscribe({
       next: ([statues, visitedStatues]) => {
+        // TODO: this.statues = statues;
         this.statues = [statues[0], statues[1]];
         this.visitedStatues = visitedStatues;
         this.loadingRequests = false;

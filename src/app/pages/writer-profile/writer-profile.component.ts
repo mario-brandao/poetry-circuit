@@ -26,10 +26,6 @@ export class WriterProfileComponent implements OnInit {
   }
 
   toAugmentedReality(): void {
-    this.router.navigate(['/augmented-reality'], {
-      // queryParams: { writer, poem },
-      queryParamsHandling: 'merge',
-      skipLocationChange: true,
-    });
+    this.router.navigate(['/augmented-reality', this.statue.normalizedName]);
   }
 }

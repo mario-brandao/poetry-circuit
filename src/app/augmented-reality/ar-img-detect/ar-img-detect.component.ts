@@ -1,26 +1,19 @@
 import {
-  AfterViewInit,
   Component,
   ElementRef,
   NgZone,
   OnDestroy,
+  OnInit,
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
-// import * as ArtoolkitMin from 'src/assets/jsartoolkit5/artoolkit.min.js';
-// import * as ArtoolkitApi from 'src/assets/jsartoolkit5/artoolkit.api.js';
-// import * as ThreexArtoolkitsource from 'src/assets/threex/threex-artoolkitsource.js';
-// import * as ThreexArtoolkitcontext from 'src/assets/threex/threex-artoolkitcontext.js';
-// import * as ThreexArbasecontrols from 'src/assets/threex/threex-arbasecontrols.js';
-// import * as ThreexArmarkercontrols from 'src/assets/threex/threex-armarkercontrols.js';
-// import 'src/assets/libs/threex/threex-artoolkitsource.js';
-// import 'src/assets/libs/threex/threex-artoolkitcontext.js';
-// import 'src/assets/libs/threex/threex-arbasecontrols.js';
-// import 'src/assets/libs/threex/threex-armarkercontrols.js';
 import {
   AmbientLight,
+  AnimationClip,
   AnimationMixer,
   AudioListener,
   AudioLoader,
@@ -56,7 +49,7 @@ interface config {
   templateUrl: './ar-img-detect.component.html',
   styleUrls: ['./ar-img-detect.component.scss'],
 })
-export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
+export class ArImgDetectComponent implements OnInit, OnDestroy {
   @ViewChild('rendererContainer', { static: true })
   rendererContainer!: ElementRef;
 
@@ -82,34 +75,46 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   private writer: string = '';
   private poem: string = '';
   private markerConfigurations: config;
+  private $destroy = new Subject<void>();
 
   constructor(private route: ActivatedRoute, private zone: NgZone) {}
 
-  ngAfterViewInit(): void {
-    // TODO: fix load and reload
-    this.route.queryParams.subscribe((params) => {
-      const writerParam = params['writer'] || 'ascenso-ferreira';
-      const poemParam = params['poem'] || 'maracatu';
-      const paramsChanged =
-        this.writer !== writerParam || this.poem !== poemParam;
-
-      if (paramsChanged) {
-        this.log('params changed');
-
-        this.log('params changed', writerParam, poemParam);
-        this.resetViewParams(writerParam, poemParam);
-        this.initializeAR();
-      }
-    });
-
-    if (!this.markerConfigurations) {
-      this.resetViewParams('ascenso-ferreira', 'maracatu');
-      this.initializeAR();
-    }
+  ngOnInit(): void {
+    this.start(
+      this.route.parent.snapshot.params.writer,
+      this.route.snapshot.params.poem
+    );
+    this.watchRouteChanges();
   }
 
   ngOnDestroy(): void {
+    this.$destroy.next();
     this.clearAR();
+  }
+
+  start(writer: string, poem: string): void {
+    this.resetViewParams(writer, poem);
+    this.initializeAR();
+  }
+
+  // TODO: fix
+  restart(writer: string, poem: string): void {
+    this.clearAR();
+    this.resetViewParams(writer, poem);
+    this.initializeAR();
+  }
+
+  watchRouteChanges(): void {
+    this.route.params.pipe(takeUntil(this.$destroy)).subscribe((_) => {
+      const writer = this.route.parent.snapshot.params.writer;
+      const poem = this.route.snapshot.params.poem;
+      const paramsChanged = this.writer !== writer || this.poem !== poem;
+
+      if (writer && poem && paramsChanged) {
+        this.log('params changed', writer, poem);
+        this.restart(writer, poem);
+      }
+    });
   }
 
   resetViewParams(writer: string, poem: string): void {
@@ -124,8 +129,14 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
       // audioUrl: `assets/writers-media/${this.writer}/${this.poem}.mp3`,
       // modelUrl: `assets/writers-media/${this.writer}/${this.poem}.glb`,
       // patternUrl: 'assets/libs/data/letterA.patt',
-      // modelUrl: `assets/writers-media/ascenso-ferreira/maracatu-BROKEN.fbx`,
-      // modelUrl: `assets/3d/antonio-maria/cafe-com-leite-BROKEN.fbx`,
+
+      // modelUrl: `assets/writers-media/antonio-maria/cafe-com-leite.glb`,
+
+      // modelUrl: `${environment.baseAssetsUrl}/writers-media/antonio-maria/cafe-com-leite.glb`,
+      // modelUrl: `${environment.baseAssetsUrl}/writers-media/antonio-maria/ninguem-me-ama.glb`,
+      // modelUrl: `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/maracatu.glb`,
+      // modelUrl: `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/trem-de-alagoas.glb`,
+
       modelUrl: `${environment.baseAssetsUrl}/writers-media/${this.writer}/${this.poem}.glb`,
       scale: [3, 3, 3],
       position: [0, 0, 0],
@@ -140,6 +151,7 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
   }
 
   private clearAR(): void {
+    this.clearAnimations();
     // setTimeout(() => {
     this.audioListener?.clear();
     this.positionalAudio?.stop();
@@ -184,8 +196,8 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
       this.clearAR();
 
       this.scene = new Scene();
-      // const ambientLight = new AmbientLight(0xcccccc, 0.5);
-      // this.scene.add(ambientLight);
+      const ambientLight = new AmbientLight(0xcccccc, 0.5);
+      this.scene.add(ambientLight);
 
       this.camera = new Camera();
       this.scene.add(this.camera);
@@ -273,12 +285,8 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     model.rotation.set(rotationX, rotationY, rotationZ);
 
     // Configurar animações, se existirem
-    if (gltf.animations && gltf.animations.length > 0) {
-      const mixer = new AnimationMixer(model);
-      gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
-      // Salve o mixer para atualização no loop de animação, se necessário
-      this.mixer = mixer;
-    }
+    this.playAnimations(gltf.animations, model);
+    this.model = model;
 
     this.markerRoot.add(model);
 
@@ -286,10 +294,10 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     this.markerRoot.add(ambientLight);
     this.addAudio(this.markerConfigurations.audioUrl);
     this.log('load finished');
-    console.log(model);
 
-    this.getAllTextures(model);
-    this.loading = false;
+    this.zone.run(() => {
+      this.loading = false;
+    });
   }
 
   fbxCallback(group: Group): void {
@@ -312,12 +320,7 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     // this.log('scale', `${group.scale.x}-${group.scale.y}-${group.scale.z}`);
 
     // Configurar animações, se existirem
-    if (group.animations && group.animations.length > 0) {
-      const mixer = new AnimationMixer(model);
-      group.animations.forEach((clip) => mixer.clipAction(clip).play());
-      // Salve o mixer para atualização no loop de animação, se necessário
-      this.mixer = mixer;
-    }
+    this.playAnimations(group.animations, group);
 
     this.model = model;
 
@@ -329,28 +332,49 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
 
     this.log('finished loading');
 
-    this.loading = false;
+    this.zone.run(() => {
+      this.loading = false;
+    });
+  }
+
+  playAnimations(animations: AnimationClip[], obj: Group): void {
+    if (!animations?.length) {
+      return;
+    }
+    this.mixer = new AnimationMixer(obj);
+    animations.forEach((clip) => {
+      this.mixer.clipAction(clip).reset().play();
+    });
+  }
+
+  clearAnimations(): void {
+    if (!this.mixer) {
+      return;
+    }
+    this.mixer.stopAllAction();
+    this.mixer.uncacheRoot(this.mixer.getRoot());
+    this.mixer = null;
   }
 
   progress(xhr: ProgressEvent): void {
     // TODO: handle case when total is zero
-    // this.zone.run(() => {
-    this.loaded = xhr.loaded;
-    this.total = xhr.total;
-    // console.log(xhr);
-    // this.log(`loaded ${xhr.loaded} ${xhr.total}`);
-    // this.log(xhr.total > 0 ? (xhr.loaded / xhr.total) * 100 : 0);
-    // });
+    this.zone.run(() => {
+      this.loaded = xhr.loaded;
+      this.total = xhr.total;
+      // console.log(xhr);
+      // this.log(`loaded ${xhr.loaded} ${xhr.total}`);
+      // this.log(xhr.total > 0 ? (xhr.loaded / xhr.total) * 100 : 0);
+    });
   }
 
   error(error: ErrorEvent): void {
-    console.log(error);
-
     this.log('error', error);
     if (error.type !== 'progress') {
       alert('Falha ao carregar modelo 3D');
       this.log('error', error);
-      this.loading = false;
+      this.zone.run(() => {
+        this.loading = false;
+      });
 
       this.zone.run(() => {
         this.loaded = 100;
@@ -386,17 +410,17 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     // const mockURL = `assets/writers-media/antonio maria7 - cafe com leite.fbx`; // animação quebrada, n carrega
 
     // TODO: remove
-    this.loadMockCube();
+    // this.loadMockCube();
 
-    // const [loader, onLoad, onProgress, onError] = this.getLoader(
-    //   this.markerConfigurations.modelUrl
-    // );
-    // loader.load(
-    //   this.markerConfigurations.modelUrl,
-    //   onLoad,
-    //   onProgress,
-    //   onError
-    // );
+    const [loader, onLoad, onProgress, onError] = this.getLoader(
+      this.markerConfigurations.modelUrl
+    );
+    loader.load(
+      this.markerConfigurations.modelUrl,
+      onLoad,
+      onProgress,
+      onError
+    );
 
     // this.log(this.scene);
   }
@@ -498,32 +522,5 @@ export class ArImgDetectComponent implements AfterViewInit, OnDestroy {
     // TODO: create flag for dev env only
     // console.log(log);
     // this.logs.push(log);
-  }
-
-  getAllTextures(group): void {
-    group.traverse((child) => {
-      if (child.isMesh) {
-        const material = child.material;
-
-        if (Array.isArray(material)) {
-          material.forEach((mat) => {
-            this.logTexture(mat);
-          });
-        } else {
-          this.logTexture(material);
-        }
-      }
-    });
-  }
-
-  logTexture(material): void {
-    if (material.map) console.log(material.map.image.src);
-    if (material.bumpMap) console.log(material.bumpMap.image.src);
-    if (material.normalMap) console.log(material.normalMap.image.src);
-    if (material.roughnessMap) console.log(material.roughnessMap.image.src);
-    if (material.metalnessMap) console.log(material.metalnessMap.image.src);
-    if (material.alphaMap) console.log(material.alphaMap.image.src);
-    if (material.displacementMap)
-      console.log(material.displacementMap.image.src);
   }
 }

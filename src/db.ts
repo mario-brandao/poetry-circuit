@@ -2,16 +2,24 @@ import Dexie, { Table } from 'dexie';
 import writersData from './writers.json';
 
 export interface Statue {
-  id?: number;
+  id: number;
   name: string;
+  normalizedName: string;
   location: string;
   coordinates: string[];
   subtitle: string;
   rangeLife: string;
   visited: boolean;
   bio: string;
+  poems: Poem[];
   images: { label: string; pic: string }[];
   cover: string;
+}
+
+export interface Poem {
+  title: string;
+  normalizedTitle: string;
+  visited: boolean;
 }
 
 export interface User {
@@ -20,6 +28,7 @@ export interface User {
 }
 
 export class AppDB extends Dexie {
+  // Initially partial Statue for lack of id
   statues!: Table<Statue, number>;
   user!: Table<User, number>;
 

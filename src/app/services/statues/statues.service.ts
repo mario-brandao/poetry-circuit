@@ -19,7 +19,29 @@ export class StatuesService {
     return statues.find((statue) => statue['id'] === id);
   }
 
+  async getStatueByNormalizedName(
+    normalizedName: string
+  ): Promise<Statue | undefined> {
+    const statues: Statue[] = await firstValueFrom(this.statues$ as any);
+    return statues.find(
+      (statue) => statue['normalizedName'] === normalizedName
+    );
+  }
+
   async markAsVisited(id: number, visited = true): Promise<void> {
     await db.updateStatueData(id, { visited });
+  }
+
+  async markPoemAsVisited(
+    id: number,
+    poemIndex: number,
+    visited = true
+  ): Promise<void> {
+    const statue = await this.getStatueData(id);
+    if (!statue) {
+      return;
+    }
+    statue.poems[poemIndex].visited = visited;
+    await db.updateStatueData(id, { poems: statue.poems });
   }
 }

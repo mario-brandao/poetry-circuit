@@ -26,8 +26,6 @@ export class LoadingOverlayComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.loaded || changes.total) {
-      console.log('updating progress');
-
       this.updateProgress();
     }
   }

@@ -14,7 +14,7 @@ export class LandingComponent {
     const user = await db.user.get(1);
     if (user?.firstAccess) {
       await db.user.update(1, { firstAccess: false });
-      this.router.navigate(['/home']);
     }
+    this.router.navigate(['/home']);
   }
 }

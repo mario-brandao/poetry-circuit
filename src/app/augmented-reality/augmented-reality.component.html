@@ -1,4 +1,4 @@
-<app-ar-img-detect></app-ar-img-detect>
+<router-outlet></router-outlet>
 
 <div *ngIf="poemOptions" class="buttons-container">
   <button
@@ -6,7 +6,7 @@
     class="poem-button"
     [class.active]="activeButton === i"
     [class.visited]="poem.visited"
-    (click)="selectPoem(i)"
+    (click)="openPoem(i)"
   >
     Poesia {{ i + 1 }}
   </button>
