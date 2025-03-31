@@ -399,7 +399,8 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     // GLB
-    // const mockURL = `assets/writers-media/ascenso-ferreira/maracatu.glb`; // OK - pichado
+    // const mockURL = `assets/writers-media/ascenso-ferreira/maracatu.glb`;
+    // const mockURL = `assets/writers-media/ascenso-ferreira/trem-de-alagoas.glb`;
     // const mockURL = `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/trem-de-alagoas.glb`; // OK
     // const mockURL = `${environment.baseAssetsUrl}/writers-media/antonio-maria/cafe-com-leite.glb`; // de costas e tudo branco
     // const mockURL = `${environment.baseAssetsUrl}/writers-media/antonio-maria/ninguem-me-ama.glb`; // de costas e tudo branco

@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs/internal/Subject';
 import { takeUntil } from 'rxjs/operators';
-import { Statue } from 'src/db';
+import { Poem, Statue } from 'src/db';
 import { StatuesService } from '../services/statues/statues.service';
 
 interface Writer {
@@ -19,11 +19,7 @@ interface Writer {
 })
 export class AugmentedRealityComponent implements OnInit, OnDestroy {
   activeButton: number | null = null;
-  poemOptions: Array<{
-    title: string;
-    normalizedTitle: string;
-    visited: boolean;
-  }>;
+  poemOptions: Poem[];
   selectedWriter: Statue;
   $destroy = new Subject<void>();
 
@@ -66,6 +62,12 @@ export class AugmentedRealityComponent implements OnInit, OnDestroy {
     }
 
     this.poemOptions = this.selectedWriter.poems;
+
+    if (this.poemOptions[0].visited && !this.poemOptions[1].visited) {
+      this.openPoem(1);
+      return;
+    }
+
     this.openPoem(0);
   }
 
