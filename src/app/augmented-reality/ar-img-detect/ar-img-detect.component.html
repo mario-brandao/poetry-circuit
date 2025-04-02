@@ -4,8 +4,10 @@
 
 <div #rendererContainer></div>
 
-<app-loading-overlay
+<!-- TODO: place back once models are coming from proper CDN -->
+<!-- <app-loading-overlay
   *ngIf="loading"
   [loaded]="loaded"
   [total]="total"
-></app-loading-overlay>
+></app-loading-overlay> -->
+<app-loading-spinner *ngIf="loading" [loading]="loading"></app-loading-spinner>

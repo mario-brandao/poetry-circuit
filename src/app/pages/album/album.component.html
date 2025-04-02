@@ -7,7 +7,7 @@
   <div class="grid grid-cols-3 p-4 gap-y-5 overflow-x-hidden overflow-y-auto">
     <app-statue-card
       class="flex justify-self-center"
-      *ngFor="let statue of statues$ | async"
+      *ngFor="let statue of (statues$ | async)?.slice(0, 2)"
       [statue]="statue"
     ></app-statue-card>
   </div>
