@@ -28,6 +28,23 @@ export class StatuesService {
     );
   }
 
+  async getStatueSettings(
+    writterName: string,
+    poemTitle: string
+  ): Promise<
+    { scale: number[]; rotation: number[]; position: number[] } | undefined
+  > {
+    const statues: Statue[] = await firstValueFrom(this.statues$ as any);
+    const writter = statues.find(
+      (statue) => statue['normalizedName'] === writterName
+    );
+
+    const { scale, rotation, position } = writter.poems.find(
+      (statue) => statue['normalizedTitle'] === poemTitle
+    );
+    return { scale, rotation, position };
+  }
+
   async markAsVisited(id: number, visited = true): Promise<void> {
     await db.updateStatueData(id, { visited });
   }

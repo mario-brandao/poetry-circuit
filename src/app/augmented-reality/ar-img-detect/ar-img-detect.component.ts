@@ -9,6 +9,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { StatuesService } from 'src/app/services/statues/statues.service';
 import { environment } from 'src/environments/environment';
 
 import {
@@ -77,10 +78,14 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   private markerConfigurations: config;
   private $destroy = new Subject<void>();
 
-  constructor(private route: ActivatedRoute, private zone: NgZone) {}
+  constructor(
+    private route: ActivatedRoute,
+    private zone: NgZone,
+    private statuesService: StatuesService
+  ) {}
 
-  ngOnInit(): void {
-    this.start(
+  async ngOnInit(): Promise<void> {
+    await this.start(
       this.route.parent.snapshot.params.writer,
       this.route.snapshot.params.poem
     );
@@ -92,15 +97,15 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     this.clearAR();
   }
 
-  start(writer: string, poem: string): void {
-    this.resetViewParams(writer, poem);
+  async start(writer: string, poem: string): Promise<void> {
+    await this.resetViewParams(writer, poem);
     this.initializeAR();
   }
 
   // TODO: fix
-  restart(writer: string, poem: string): void {
+  async restart(writer: string, poem: string): Promise<void> {
     this.clearAR();
-    this.resetViewParams(writer, poem);
+    await this.resetViewParams(writer, poem);
     this.initializeAR();
   }
 
@@ -117,30 +122,20 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     });
   }
 
-  resetViewParams(writer: string, poem: string): void {
+  async resetViewParams(writer: string, poem: string): Promise<void> {
     this.writer = writer;
     this.poem = poem;
 
-    this.log('setting marker config');
+    const settings = await this.statuesService.getStatueSettings(
+      this.writer,
+      this.poem
+    );
 
     this.markerConfigurations = {
-      patternUrl: `${environment.baseAssetsUrl}/pattern-cp.patt`,
+      patternUrl: `${environment.baseAssetsUrl}/writers-media/${this.writer}/target.patt`,
       audioUrl: `${environment.baseAssetsUrl}/writers-media/${this.writer}/${this.poem}.mp3`,
-      // audioUrl: `assets/writers-media/${this.writer}/${this.poem}.mp3`,
-      // modelUrl: `assets/writers-media/${this.writer}/${this.poem}.glb`,
-      // patternUrl: 'assets/libs/data/letterA.patt',
-
-      // modelUrl: `assets/writers-media/antonio-maria/cafe-com-leite.glb`,
-
-      // modelUrl: `${environment.baseAssetsUrl}/writers-media/antonio-maria/cafe-com-leite.glb`,
-      // modelUrl: `${environment.baseAssetsUrl}/writers-media/antonio-maria/ninguem-me-ama.glb`,
-      // modelUrl: `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/maracatu.glb`,
-      // modelUrl: `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/trem-de-alagoas.glb`,
-
       modelUrl: `${environment.baseAssetsUrl}/writers-media/${this.writer}/${this.poem}.glb`,
-      scale: [3, 3, 3],
-      position: [0, 0, 0],
-      rotation: [-1, 0, 0],
+      ...settings,
       color: 0xffffff,
     };
 
@@ -153,9 +148,15 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   private clearAR(): void {
     this.clearAnimations();
     // setTimeout(() => {
-    this.audioListener?.clear();
-    this.positionalAudio?.stop();
-    this.arToolkitContext?.stop();
+    if (this.audioListener?.clear) {
+      this.audioListener.clear();
+    }
+    if (this.positionalAudio?.stop) {
+      this.positionalAudio.stop();
+    }
+    if (this.arToolkitContext?.stop) {
+      this.arToolkitContext.stop();
+    }
     window.removeEventListener('resize', this.onResize);
     this.rendererContainer.nativeElement.innerHTML = '';
     if (this.renderer) {
@@ -401,6 +402,8 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     // GLB
     // const mockURL = `assets/writers-media/ascenso-ferreira/maracatu.glb`;
     // const mockURL = `assets/writers-media/ascenso-ferreira/trem-de-alagoas.glb`;
+    // const mockURL = `assets/writers-media/antonio-maria/cafe-com-leite.glb`;
+    // const mockURL = `assets/writers-media/antonio-maria/ninguem-me-ama.glb`;
     // const mockURL = `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/trem-de-alagoas.glb`; // OK
     // const mockURL = `${environment.baseAssetsUrl}/writers-media/antonio-maria/cafe-com-leite.glb`; // de costas e tudo branco
     // const mockURL = `${environment.baseAssetsUrl}/writers-media/antonio-maria/ninguem-me-ama.glb`; // de costas e tudo branco
@@ -415,9 +418,11 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
 
     const [loader, onLoad, onProgress, onError] = this.getLoader(
       this.markerConfigurations.modelUrl
+      // mockURL
     );
     loader.load(
       this.markerConfigurations.modelUrl,
+      // mockURL,
       onLoad,
       onProgress,
       onError
