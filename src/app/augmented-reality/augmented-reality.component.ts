@@ -48,7 +48,9 @@ export class AugmentedRealityComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.$destroy))
       .subscribe(async (params) => {
         if (params.writer) {
-          const userConsent = confirm(`Deseja iniciar a experiencia imersiva?`);
+          const userConsent = confirm(
+            `Deseja iniciar a experiencia imersiva? Por favor, desligue o modo silencioso e aumente o volume.`
+          );
           this.selectedWriter =
             await this.statuesService.getStatueByNormalizedName(params.writer);
           this.setDefaultPoem();

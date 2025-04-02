@@ -18,14 +18,11 @@ import {
   AnimationMixer,
   AudioListener,
   AudioLoader,
-  BoxGeometry,
   Camera,
   Clock,
   Color,
   ColorRepresentation,
   Group,
-  Mesh,
-  MeshBasicMaterial,
   PositionalAudio,
   Scene,
   WebGLRenderer,
@@ -76,6 +73,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   private writer: string = '';
   private poem: string = '';
   private markerConfigurations: config;
+  private animationFrameId: number;
   private $destroy = new Subject<void>();
 
   constructor(
@@ -116,7 +114,6 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       const paramsChanged = this.writer !== writer || this.poem !== poem;
 
       if (writer && poem && paramsChanged) {
-        this.log('params changed', writer, poem);
         this.restart(writer, poem);
       }
     });
@@ -138,11 +135,6 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       ...settings,
       color: 0xffffff,
     };
-
-    this.log(
-      this.markerConfigurations.modelUrl,
-      this.markerConfigurations.audioUrl
-    );
   }
 
   private clearAR(): void {
@@ -161,7 +153,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     this.rendererContainer.nativeElement.innerHTML = '';
     if (this.renderer) {
       this.renderer.dispose();
-      this.renderer.forceContextLoss(); // Para garantir que o WebGL seja liberado
+      this.renderer.forceContextLoss();
       this.renderer.domElement = null;
       this.renderer = null;
     }
@@ -285,7 +277,6 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     model.position.set(positionX, positionY, positionZ);
     model.rotation.set(rotationX, rotationY, rotationZ);
 
-    // Configurar animações, se existirem
     this.playAnimations(gltf.animations, model);
     this.model = model;
 
@@ -294,7 +285,6 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     const ambientLight = new AmbientLight(0xfffff, 1);
     this.markerRoot.add(ambientLight);
     this.addAudio(this.markerConfigurations.audioUrl);
-    this.log('load finished');
 
     this.zone.run(() => {
       this.loading = false;
@@ -302,36 +292,24 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   }
 
   fbxCallback(group: Group): void {
-    const debugCube = new Mesh(
-      new BoxGeometry(10, 10, 10),
-      new MeshBasicMaterial({ color: 0xff0000, wireframe: true })
-    );
-    debugCube.position.set(0, -40, 0);
-    this.scene.add(debugCube);
-
-    // this.log(`loaded model ${this.markerConfigurations.modelUrl}`);
-
     const model = group;
-    model.position.set(0, -500, -100);
+    const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
+    const [positionX, positionY, positionZ] =
+      this.markerConfigurations.position;
+    const [rotationX, rotationY, rotationZ] =
+      this.markerConfigurations.rotation;
+    model.scale.set(scaleX, scaleY, scaleZ);
+    model.position.set(positionX, positionY, positionZ);
+    model.rotation.set(rotationX, rotationY, rotationZ);
 
-    // this.log(
-    //   'position',
-    //   `${group.position.x}-${group.position.y}-${group.position.z}`
-    // );
-    // this.log('scale', `${group.scale.x}-${group.scale.y}-${group.scale.z}`);
-
-    // Configurar animações, se existirem
-    this.playAnimations(group.animations, group);
-
+    this.playAnimations(group.animations, model);
     this.model = model;
 
-    this.markerRoot.add(this.model);
+    this.markerRoot.add(model);
 
-    // const material =  new MeshStandardMaterial({ ...textures });
-
+    const ambientLight = new AmbientLight(0xfffff, 1);
+    this.markerRoot.add(ambientLight);
     this.addAudio(this.markerConfigurations.audioUrl);
-
-    this.log('finished loading');
 
     this.zone.run(() => {
       this.loading = false;
@@ -343,12 +321,18 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       return;
     }
     this.mixer = new AnimationMixer(obj);
+
     animations.forEach((clip) => {
+      this.log(clip.name);
+
       this.mixer.clipAction(clip).reset().play();
     });
   }
 
   clearAnimations(): void {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
     if (!this.mixer) {
       return;
     }
@@ -358,63 +342,45 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   }
 
   progress(xhr: ProgressEvent): void {
-    // TODO: handle case when total is zero
     this.zone.run(() => {
       this.loaded = xhr.loaded;
       this.total = xhr.total;
-      // console.log(xhr);
-      // this.log(`loaded ${xhr.loaded} ${xhr.total}`);
-      // this.log(xhr.total > 0 ? (xhr.loaded / xhr.total) * 100 : 0);
     });
   }
 
   error(error: ErrorEvent): void {
-    this.log('error', error);
-    if (error.type !== 'progress') {
-      alert('Falha ao carregar modelo 3D');
-      this.log('error', error);
-      this.zone.run(() => {
-        this.loading = false;
-      });
-
-      this.zone.run(() => {
-        this.loaded = 100;
-        this.total = 100;
-      });
+    if (error.type === 'progress') {
+      return;
     }
+
+    alert('Falha ao carregar modelo 3D');
+    this.log('error', error);
+    this.zone.run(() => {
+      this.loading = false;
+    });
+
+    this.zone.run(() => {
+      this.loaded = 100;
+      this.total = 100;
+    });
   }
 
   private addMarker(): void {
     this.markerRoot = new Group();
     this.scene.add(this.markerRoot);
 
-    const markerControls = new THREEx.ArMarkerControls(
-      this.arToolkitContext,
-      this.markerRoot,
-      {
-        type: 'pattern',
-        patternUrl: this.markerConfigurations.patternUrl,
-      }
-    );
+    new THREEx.ArMarkerControls(this.arToolkitContext, this.markerRoot, {
+      type: 'pattern',
+      patternUrl: this.markerConfigurations.patternUrl,
+    });
 
     this.loading = true;
 
-    // GLB
     // const mockURL = `assets/writers-media/ascenso-ferreira/maracatu.glb`;
     // const mockURL = `assets/writers-media/ascenso-ferreira/trem-de-alagoas.glb`;
     // const mockURL = `assets/writers-media/antonio-maria/cafe-com-leite.glb`;
     // const mockURL = `assets/writers-media/antonio-maria/ninguem-me-ama.glb`;
-    // const mockURL = `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/trem-de-alagoas.glb`; // OK
-    // const mockURL = `${environment.baseAssetsUrl}/writers-media/antonio-maria/cafe-com-leite.glb`; // de costas e tudo branco
-    // const mockURL = `${environment.baseAssetsUrl}/writers-media/antonio-maria/ninguem-me-ama.glb`; // de costas e tudo branco
-
-    // FBX
-    // const mockURL = `assets/fbx-samples/spider/Spider.fbx`; // broken texture
-    // const mockURL = `assets/writers-media/antonio maria7.fbx`; // animação quebrada, n carrega
-    // const mockURL = `assets/writers-media/antonio maria7 - cafe com leite.fbx`; // animação quebrada, n carrega
-
-    // TODO: remove
-    // this.loadMockCube();
+    // const mockURL = `${environment.baseAssetsUrl}/writers-media/ascenso-ferreira/trem-de-alagoas.glb`;
 
     const [loader, onLoad, onProgress, onError] = this.getLoader(
       this.markerConfigurations.modelUrl
@@ -427,41 +393,24 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       onProgress,
       onError
     );
-
-    // this.log(this.scene);
   }
 
   private addAudio(audioPath: string): void {
-    // this.log('add audio');
-    // Carregar o arquivo de áudio
     const audioLoader = new AudioLoader();
-    this.positionalAudio = new PositionalAudio(this.audioListener); // Usando PositionalAudio para um efeito 3D
-
-    // this.log('add audio 2');
+    this.positionalAudio = new PositionalAudio(this.audioListener);
 
     audioLoader.load(audioPath, (buffer) => {
-      // this.log('add audio 3');
-
       this.positionalAudio.setBuffer(buffer);
-      this.positionalAudio.setLoop(true); // Configure se você quer que o áudio faça loop
-      this.positionalAudio.setVolume(0.5); // Ajuste o volume
-
-      // this.log('add audio 4');
-
-      // Reproduzir o áudio sincronizado com a animação
+      this.positionalAudio.setLoop(true);
+      this.positionalAudio.setVolume(1);
       this.positionalAudio.play();
-
-      // this.log('add audio 5');
-
-      // Adicionar o áudio à cena (vinculado ao modelo)
       try {
-        // this.log('add audio 6');
-        this.scene.add(this.positionalAudio);
+        // TODO: testar adicionar o áudio vinculado ao modelo (nao a cena)
+        this.model.add(this.positionalAudio);
+        // this.scene.add(this.positionalAudio);
       } catch (error) {
         console.error(error);
-
         alert('Falha ao iniciar áudio');
-        // this.log('failed to add audio to model');
       }
 
       this.audioListener = new AudioListener();
@@ -481,7 +430,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   };
 
   private animate = (): void => {
-    requestAnimationFrame(this.animate);
+    this.animationFrameId = requestAnimationFrame(this.animate);
     this.deltaTime = this.clock.getDelta();
     this.totalTime += this.deltaTime;
 
@@ -495,38 +444,9 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     this.renderer.render(this.scene, this.camera);
   };
 
-  // HELPERS
-  // TODO: remove helpers
-  private loadMockCube(): void {
-    // Cria uma geometria de cubo
-    const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshBasicMaterial({
-      color: 0xff0000, // Vermelho
-      transparent: true,
-      opacity: 0.8,
-    });
-    const mesh = new Mesh(geometry, material);
-    this.markerRoot.add(mesh);
-
-    // Adiciona animação de rotação
-    const animateCube = (): void => {
-      requestAnimationFrame(animateCube);
-      mesh.rotation.x += 0.01;
-      mesh.rotation.y += 0.01;
-    };
-
-    animateCube();
-
-    this.addAudio(this.markerConfigurations.audioUrl);
-
-    this.zone.run(() => {
-      this.loading = false;
-    });
-  }
-
   log(...log: any): void {
     // TODO: create flag for dev env only
-    // console.log(log);
+    console.log(log);
     // this.logs.push(log);
   }
 }
