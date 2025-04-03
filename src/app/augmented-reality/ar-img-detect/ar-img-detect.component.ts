@@ -4,7 +4,7 @@ import {
   NgZone,
   OnDestroy,
   OnInit,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -20,7 +20,6 @@ import {
   AudioLoader,
   Camera,
   Clock,
-  Color,
   ColorRepresentation,
   Group,
   PositionalAudio,
@@ -190,7 +189,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       this.clearAR();
 
       this.scene = new Scene();
-      const ambientLight = new AmbientLight(0xcccccc, 0.5);
+      const ambientLight = new AmbientLight('#FFFFFF', 1);
       this.scene.add(ambientLight);
 
       this.camera = new Camera();
@@ -198,7 +197,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
 
       this.renderer = new WebGLRenderer({ antialias: true, alpha: true });
       this.renderer.setSize(window.innerWidth, window.innerHeight);
-      this.renderer.setClearColor(new Color('lightgrey'), 0);
+      this.renderer.setClearColor(0xcccccc, 0);
       this.renderer.setPixelRatio(window.devicePixelRatio);
 
       this.rendererContainer.nativeElement.appendChild(
@@ -281,11 +280,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     this.animations = gltf.animations;
     this.model = model;
     this.playAnimations();
-
     this.markerRoot.add(model);
-
-    const ambientLight = new AmbientLight(0xfffff, 1);
-    this.markerRoot.add(ambientLight);
     this.addAudio(this.markerConfigurations.audioUrl);
 
     this.zone.run(() => {
@@ -307,11 +302,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     this.animations = model.animations;
     this.model = model;
     this.playAnimations();
-
     this.markerRoot.add(model);
-
-    const ambientLight = new AmbientLight(0xfffff, 1);
-    this.markerRoot.add(ambientLight);
     this.addAudio(this.markerConfigurations.audioUrl);
 
     this.zone.run(() => {
