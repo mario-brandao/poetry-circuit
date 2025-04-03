@@ -4,7 +4,7 @@ import {
   NgZone,
   OnDestroy,
   OnInit,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -73,6 +73,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   private writer: string = '';
   private poem: string = '';
   private markerConfigurations: config;
+  private animations: AnimationClip[] = [];
   private animationFrameId: number;
   private $destroy = new Subject<void>();
 
@@ -277,8 +278,9 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     model.position.set(positionX, positionY, positionZ);
     model.rotation.set(rotationX, rotationY, rotationZ);
 
-    this.playAnimations(gltf.animations, model);
+    this.animations = gltf.animations;
     this.model = model;
+    this.playAnimations();
 
     this.markerRoot.add(model);
 
@@ -302,8 +304,9 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     model.position.set(positionX, positionY, positionZ);
     model.rotation.set(rotationX, rotationY, rotationZ);
 
-    this.playAnimations(group.animations, model);
+    this.animations = model.animations;
     this.model = model;
+    this.playAnimations();
 
     this.markerRoot.add(model);
 
@@ -316,13 +319,13 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     });
   }
 
-  playAnimations(animations: AnimationClip[], obj: Group): void {
-    if (!animations?.length) {
+  playAnimations(): void {
+    if (!this.animations?.length) {
       return;
     }
-    this.mixer = new AnimationMixer(obj);
+    this.mixer = new AnimationMixer(this.model);
 
-    animations.forEach((clip) => {
+    this.animations.forEach((clip) => {
       this.log(clip.name);
 
       this.mixer.clipAction(clip).reset().play();
