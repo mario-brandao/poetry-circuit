@@ -1,12 +1,13 @@
 import {
   Component,
   ElementRef,
+  HostListener,
   NgZone,
   OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { StatuesService } from 'src/app/services/statues/statues.service';
@@ -69,6 +70,8 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   protected loading = true;
   protected loaded: number;
   protected total: number;
+  protected playIconActive = false;
+  protected audio: HTMLAudioElement;
   private writer: string = '';
   private poem: string = '';
   private markerConfigurations: config;
@@ -78,6 +81,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private zone: NgZone,
     private statuesService: StatuesService
   ) {}
@@ -90,9 +94,22 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     this.watchRouteChanges();
   }
 
-  ngOnDestroy(): void {
+  async ngOnDestroy(): Promise<void> {
     this.$destroy.next();
-    this.clearAR();
+    await this.clearAR();
+  }
+
+  @HostListener('window:blur', ['$event'])
+  async onWindowBlur(_): Promise<void> {
+    await this.clearAR();
+    document.querySelector('video')?.remove();
+    const statue = await this.statuesService.getStatueByNormalizedName(
+      this.writer
+    );
+
+    window.location.href = `${
+      window.location.href.split('/augmented-reality')[0]
+    }/writer/${statue.id}`;
   }
 
   async start(writer: string, poem: string): Promise<void> {
@@ -100,9 +117,8 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     this.initializeAR();
   }
 
-  // TODO: fix
   async restart(writer: string, poem: string): Promise<void> {
-    this.clearAR();
+    await this.clearAR();
     await this.resetViewParams(writer, poem);
     this.initializeAR();
   }
@@ -137,19 +153,14 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     };
   }
 
-  private clearAR(): void {
+  private async clearAR(): Promise<void> {
     this.clearAnimations();
-    // setTimeout(() => {
-    if (this.audioListener?.clear) {
-      this.audioListener.clear();
-    }
-    if (this.positionalAudio?.stop) {
-      this.positionalAudio.stop();
-    }
-    if (this.arToolkitContext?.stop) {
-      this.arToolkitContext.stop();
+
+    if (this.audio) {
+      await this.audio.pause();
     }
     window.removeEventListener('resize', this.onResize);
+    this.arToolkitSource;
     this.rendererContainer.nativeElement.innerHTML = '';
     if (this.renderer) {
       this.renderer.dispose();
@@ -181,12 +192,11 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     if (this.camera) {
       this.camera = null;
     }
-    // });
   }
 
   private initializeAR(): void {
-    this.zone.runOutsideAngular(() => {
-      this.clearAR();
+    this.zone.runOutsideAngular(async () => {
+      await this.clearAR();
 
       this.scene = new Scene();
       const ambientLight = new AmbientLight('#FFFFFF', 1);
@@ -279,9 +289,8 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
 
     this.animations = gltf.animations;
     this.model = model;
-    this.playAnimations();
     this.markerRoot.add(model);
-    this.addAudio(this.markerConfigurations.audioUrl);
+    this.play();
 
     this.zone.run(() => {
       this.loading = false;
@@ -301,40 +310,13 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
 
     this.animations = model.animations;
     this.model = model;
-    this.playAnimations();
     this.markerRoot.add(model);
-    this.addAudio(this.markerConfigurations.audioUrl);
+    this.play();
 
     this.zone.run(() => {
       this.loading = false;
     });
   }
-
-  playAnimations(): void {
-    if (!this.animations?.length) {
-      return;
-    }
-    this.mixer = new AnimationMixer(this.model);
-
-    this.animations.forEach((clip) => {
-      this.log(clip.name);
-
-      this.mixer.clipAction(clip).reset().play();
-    });
-  }
-
-  clearAnimations(): void {
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-    }
-    if (!this.mixer) {
-      return;
-    }
-    this.mixer.stopAllAction();
-    this.mixer.uncacheRoot(this.mixer.getRoot());
-    this.mixer = null;
-  }
-
   progress(xhr: ProgressEvent): void {
     this.zone.run(() => {
       this.loaded = xhr.loaded;
@@ -389,7 +371,87 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     );
   }
 
-  private addAudio(audioPath: string): void {
+  protected async play(): Promise<void> {
+    this.getAudio();
+    await this.playAudio();
+    if (!this.playIconActive) {
+      this.playAnimations();
+    }
+  }
+
+  private playAnimations(): void {
+    if (!this.animations?.length) {
+      return;
+    }
+    this.mixer = new AnimationMixer(this.model);
+
+    this.animations.forEach((clip) => {
+      this.mixer.clipAction(clip).reset().play();
+    });
+  }
+
+  private clearAnimations(): void {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
+    if (!this.mixer) {
+      return;
+    }
+    this.mixer.stopAllAction();
+    this.mixer.uncacheRoot(this.mixer.getRoot());
+    this.mixer = null;
+  }
+
+  private getAudio(): void {
+    try {
+      this.audio = new Audio(this.markerConfigurations.audioUrl);
+      this.audio.loop = true;
+      this.audio.volume = 1;
+    } catch (error) {
+      console.error('Erro ao carregar o áudio:', error);
+      alert('Áudio não encontrado');
+    }
+  }
+
+  async playAudio(withAlert = false): Promise<void> {
+    try {
+      if (withAlert) {
+        this.audio
+          .play()
+          .then(() => {
+            this.hidePlayIcon();
+          })
+          .catch(() => {
+            this.handlePlayError();
+          });
+      } else {
+        await this.audio.play();
+        this.hidePlayIcon();
+      }
+    } catch (error) {
+      this.showPlayIcon();
+    }
+  }
+
+  handlePlayError(): void {
+    this.showPlayIcon();
+    alert('Falha ao iniciar áudio. Verifique as permissões do navegador.');
+  }
+
+  showPlayIcon(): void {
+    this.zone.run(() => {
+      this.playIconActive = true;
+    });
+  }
+
+  hidePlayIcon(): void {
+    this.zone.run(() => {
+      this.playIconActive = false;
+    });
+  }
+
+  // TODO: remove if not used
+  private addPositionalAudio(audioPath: string): void {
     const audioLoader = new AudioLoader();
     this.positionalAudio = new PositionalAudio(this.audioListener);
 
@@ -398,15 +460,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       this.positionalAudio.setLoop(true);
       this.positionalAudio.setVolume(1);
       this.positionalAudio.play();
-      try {
-        // TODO: testar adicionar o áudio vinculado ao modelo (nao a cena)
-        this.model.add(this.positionalAudio);
-        // this.scene.add(this.positionalAudio);
-      } catch (error) {
-        console.error(error);
-        alert('Falha ao iniciar áudio');
-      }
-
+      this.model.add(this.positionalAudio);
       this.audioListener = new AudioListener();
       this.camera.add(this.audioListener);
     });
@@ -414,7 +468,10 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
 
   private onResize = (): void => {
     this.arToolkitSource.onResizeElement();
-    this.arToolkitSource.copyElementSizeTo(this.renderer.domElement);
+
+    if (this.renderer) {
+      this.arToolkitSource.copyElementSizeTo(this.renderer.domElement);
+    }
 
     if (this.arToolkitContext.arController !== null) {
       this.arToolkitSource.copyElementSizeTo(

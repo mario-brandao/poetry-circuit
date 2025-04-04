@@ -4,6 +4,18 @@
 
 <div #rendererContainer></div>
 
+<div *ngIf="playIconActive" (click)="play()" class="play-icon">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="white"
+    width="50px"
+    height="50px"
+  >
+    <path d="M8 5v14l11-7z" />
+  </svg>
+</div>
+
 <!-- TODO: place back once models are coming from proper CDN -->
 <!-- <app-loading-overlay
   *ngIf="loading"
