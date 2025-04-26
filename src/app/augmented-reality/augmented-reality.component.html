@@ -1,3 +1,10 @@
+<div class="poem-title">
+  <ng-container *ngIf="selectedWriter && poemOptions">
+    {{ selectedWriter?.name }} -
+    {{ poemOptions[activeButton]?.title }}
+  </ng-container>
+</div>
+
 <router-outlet></router-outlet>
 
 <div *ngIf="poemOptions" class="buttons-container">

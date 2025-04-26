@@ -10,6 +10,23 @@
   background-color: #000;
 }
 
+.poem-title {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  background-color: black;
+  color: white;
+  text-align: center;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  font-size: 14px;
+  padding: 10px;
+  z-index: 1000;
+}
+
 .poem-button {
   border: none;
   border-radius: 5px;
