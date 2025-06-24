@@ -507,4 +507,12 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     console.log(log);
     // this.logs.push(log);
   }
+
+  onBack(): void {
+    this.statuesService
+      .getStatueByNormalizedName(this.writer)
+      .then((statue) => {
+        this.router.navigate(['/writer', statue.id]);
+      });
+  }
 }
