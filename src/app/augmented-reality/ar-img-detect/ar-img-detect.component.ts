@@ -22,7 +22,9 @@ import {
   Camera,
   Clock,
   ColorRepresentation,
+  DirectionalLight,
   Group,
+  HemisphereLight,
   PositionalAudio,
   Scene,
   WebGLRenderer,
@@ -206,8 +208,20 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       await this.clearAR();
 
       this.scene = new Scene();
-      const ambientLight = new AmbientLight('#FFFFFF', 1);
+
+      // Luz ambiente suave
+      const ambientLight = new AmbientLight(0xffffff, 0.5);
       this.scene.add(ambientLight);
+
+      // Luz direcional simulando o sol
+      const directionalLight = new DirectionalLight(0xffffff, 1.2);
+      directionalLight.position.set(5, 10, 7.5);
+      directionalLight.castShadow = true;
+      this.scene.add(directionalLight);
+
+      // Luz hemisférica para simular céu e chão
+      const hemisphereLight = new HemisphereLight(0xffffbb, 0x080820, 0.6);
+      this.scene.add(hemisphereLight);
 
       this.camera = new Camera();
       this.scene.add(this.camera);
