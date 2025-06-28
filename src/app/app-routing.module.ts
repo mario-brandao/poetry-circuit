@@ -30,7 +30,6 @@ const routes: Routes = [
   {
     path: 'tutorial',
     component: TutorialComponent,
-    canActivate: [firstAcessGuard],
   },
   {
     path: 'augmented-reality',

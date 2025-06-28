@@ -13,7 +13,8 @@ export class LandingComponent {
   async toFirstAccess(): Promise<void> {
     const user = await db.user.get(1);
     if (user?.firstAccess) {
-      await db.user.update(1, { firstAccess: false });
+      this.router.navigate(['/tutorial']);
+      return;
     }
     this.router.navigate(['/home']);
   }
