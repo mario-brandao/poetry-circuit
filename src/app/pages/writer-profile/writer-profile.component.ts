@@ -11,6 +11,7 @@ import { Statue } from 'src/db';
 export class WriterProfileComponent implements OnInit {
   statue: Statue;
   showingBio = true;
+  showCongrats = false;
 
   constructor(
     protected router: Router,
@@ -23,6 +24,15 @@ export class WriterProfileComponent implements OnInit {
       Number(this.route.snapshot.params.id)
     );
     await this.statuesService.markAsVisited(this.statue.id);
+    // Verifica se deve mostrar o diálogo de parabéns
+    if (sessionStorage.getItem('showCongrats')) {
+      this.showCongrats = true;
+      sessionStorage.removeItem('showCongrats');
+    }
+  }
+
+  closeCongrats(): void {
+    this.showCongrats = false;
   }
 
   toAugmentedReality(): void {

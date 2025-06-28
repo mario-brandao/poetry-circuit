@@ -76,3 +76,18 @@
     </div>
   </div>
 </section>
+
+<dialog *ngIf="showCongrats" open class="congrats-dialog">
+  <div class="congrats-content">
+    <h2>Parabéns!</h2>
+    <p>
+      Você conheceu uma nova estátua.<br />
+      <b>Por isso, você ganhou 1000 pontos!</b>
+    </p>
+    <div class="coin-animation">
+      <app-coin-icon size="large" [animated]="true"></app-coin-icon>
+    </div>
+    <p>Vamos agora em busca das próximas?</p>
+    <button (click)="closeCongrats()">Fechar</button>
+  </div>
+</dialog>
