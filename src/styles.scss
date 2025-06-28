@@ -12,3 +12,25 @@ body > video {
 body {
   background: black;
 }
+
+// Score bar offset global - não aplica na página AR
+body.score-bar-visible:not(.ar-page) {
+  padding-bottom: 30px;
+}
+
+// Aplica padding-bottom em elementos específicos que precisam de offset - não na página AR
+body.score-bar-visible:not(.ar-page) section,
+body.score-bar-visible:not(.ar-page) .overflow-y-scroll,
+body.score-bar-visible:not(.ar-page) .overflow-y-auto {
+  padding-bottom: 30px;
+}
+
+// Para elementos com altura fixa, ajusta a altura - não na página AR
+body.score-bar-visible:not(.ar-page) .h-screen {
+  height: calc(100vh - 30px);
+}
+
+// Classe para identificar página de realidade aumentada
+.ar-page {
+  /* Estilos específicos para AR se necessário */
+}

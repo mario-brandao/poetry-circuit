@@ -1,0 +1,40 @@
+.coin-icon {
+  display: inline-block;
+  filter: brightness(0) invert(1); /* Torna o SVG branco por padrão */
+}
+
+.coin-icon--small {
+  width: 18px;
+  height: 18px;
+}
+
+.coin-icon--medium {
+  width: 30px;
+  height: 30px;
+}
+
+.coin-icon--large {
+  width: 60px;
+  height: 60px;
+}
+
+.coin-icon--animated {
+  animation: coinBounce 1.5s ease-in-out infinite;
+  filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes coinBounce {
+  0%,
+  100% {
+    transform: translateY(0) rotateY(0deg);
+  }
+  25% {
+    transform: translateY(-15px) rotateY(90deg);
+  }
+  50% {
+    transform: translateY(-25px) rotateY(180deg);
+  }
+  75% {
+    transform: translateY(-15px) rotateY(270deg);
+  }
+}

@@ -10,6 +10,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { ScoreService } from 'src/app/services/score.service';
 import { StatuesService } from 'src/app/services/statues/statues.service';
 import { environment } from 'src/environments/environment';
 
@@ -80,12 +81,14 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   private animations: AnimationClip[] = [];
   private animationFrameId: number;
   private $destroy = new Subject<void>();
+  private pointsAdded = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private zone: NgZone,
-    private statuesService: StatuesService
+    private statuesService: StatuesService,
+    private scoreService: ScoreService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -147,6 +150,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   async resetViewParams(writer: string, poem: string): Promise<void> {
     this.writer = writer;
     this.poem = poem;
+    this.pointsAdded = false;
 
     const settings = await this.statuesService.getStatueSettings(
       this.writer,
@@ -297,7 +301,22 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     }
   }
 
-  glftCallback(gltf: GLTF): void {
+  private async handleStatuePoints(): Promise<void> {
+    if (this.pointsAdded) {
+      return; // Se os pontos já foram adicionados, não adiciona novamente
+    }
+
+    const statue = await this.statuesService.getStatueByNormalizedName(
+      this.writer
+    );
+    if (statue && !(await this.scoreService.hasStatuePoints(statue.id))) {
+      await this.scoreService.addPoints(statue.id, 1000);
+      sessionStorage.setItem('showCongrats', 'true');
+      this.pointsAdded = true; // Marca que os pontos foram adicionados
+    }
+  }
+
+  async glftCallback(gltf: GLTF): Promise<void> {
     const model = gltf.scene;
     const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
     const [positionX, positionY, positionZ] =
@@ -318,7 +337,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     });
   }
 
-  fbxCallback(group: Group): void {
+  async fbxCallback(group: Group): Promise<void> {
     const model = group;
     const [scaleX, scaleY, scaleZ] = this.markerConfigurations.scale;
     const [positionX, positionY, positionZ] =
@@ -338,6 +357,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       this.loading = false;
     });
   }
+
   progress(xhr: ProgressEvent): void {
     this.zone.run(() => {
       this.loaded = xhr.loaded;
@@ -398,6 +418,9 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     if (!this.playIconActive) {
       this.playAnimations();
     }
+
+    // Adiciona pontos apenas quando o usuário der play
+    await this.handleStatuePoints();
   }
 
   private playAnimations(): void {

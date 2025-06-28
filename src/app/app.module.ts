@@ -19,6 +19,7 @@ import { LandingComponent } from './pages/landing/landing.component';
 import { HeaderComponent } from './pages/shared/components/header/header.component';
 import { SideMenuComponent } from './pages/shared/components/side-menu/side-menu.component';
 import { StatueCardComponent } from './pages/shared/components/statue-card/statue-card.component';
+import { SharedModule } from './pages/shared/shared.module';
 import { TutorialComponent } from './pages/tutorial/tutorial.component';
 import { PicsCarouselComponent } from './pages/writer-profile/pics-carousel/pics-carousel.component';
 import { WriterProfileComponent } from './pages/writer-profile/writer-profile.component';
@@ -46,6 +47,7 @@ register();
     GoogleMapsModule,
     BrowserAnimationsModule,
     NoopAnimationsModule,
+    SharedModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
