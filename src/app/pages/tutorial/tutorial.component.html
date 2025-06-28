@@ -29,7 +29,7 @@
       <img
         src="assets/images/tutorial/1.png"
         alt="Tutorial Slide 1"
-        class="w-full h-[80%] object-contain"
+        class="w-full h-[70%] object-contain"
         [ngClass]="{ 'mb-[100px]': isFirstAccess === true }"
       />
     </swiper-slide>
@@ -37,7 +37,7 @@
       <img
         src="assets/images/tutorial/2.png"
         alt="Tutorial Slide 2"
-        class="w-full h-[80%] object-contain"
+        class="w-full h-[70%] object-contain"
         [ngClass]="{ 'mb-[100px]': isFirstAccess === true }"
       />
     </swiper-slide>
@@ -45,7 +45,7 @@
       <img
         src="assets/images/tutorial/3.png"
         alt="Tutorial Slide 3"
-        class="w-full h-[80%] object-contain"
+        class="w-full h-[70%] object-contain"
         [ngClass]="{ 'mb-[100px]': isFirstAccess === true }"
       />
     </swiper-slide>
@@ -53,13 +53,13 @@
       <img
         src="assets/images/tutorial/4.png"
         alt="Tutorial Slide 4"
-        class="w-full h-[80%] object-contain"
+        class="w-full h-[70%] object-contain"
         [ngClass]="{ 'mb-[100px]': isFirstAccess === true }"
       />
     </swiper-slide>
   </swiper-container>
   <div
-    class="absolute bottom-[8%] w-full z-10 flex justify-center px-2 gap-4"
+    class="absolute bottom-[clamp(2%,10vh,50px)] w-full z-10 flex justify-center px-2 gap-4"
     *ngIf="isFirstAccess"
   >
     <button
