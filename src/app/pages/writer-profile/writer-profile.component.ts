@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AudioService } from 'src/app/services/audio.service';
 import { StatuesService } from 'src/app/services/statues/statues.service';
 import { Statue } from 'src/db';
 
@@ -12,11 +13,11 @@ export class WriterProfileComponent implements OnInit {
   statue: Statue;
   showingBio = true;
   showCongrats = false;
-
   constructor(
     protected router: Router,
     private route: ActivatedRoute,
-    private statuesService: StatuesService
+    private statuesService: StatuesService,
+    private audioService: AudioService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -24,10 +25,16 @@ export class WriterProfileComponent implements OnInit {
       Number(this.route.snapshot.params.id)
     );
     await this.statuesService.markAsVisited(this.statue.id);
+
     // Verifica se deve mostrar o diálogo de parabéns
     if (sessionStorage.getItem('showCongrats')) {
       this.showCongrats = true;
       sessionStorage.removeItem('showCongrats');
+
+      // Reproduz o som de moedas quando o diálogo é exibido
+      setTimeout(async () => {
+        await this.audioService.playCoinsSound();
+      }, 200);
     }
   }
 
