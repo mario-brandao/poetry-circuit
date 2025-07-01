@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AudioService } from 'src/app/services/audio.service';
+import { ScoreIncrementService } from 'src/app/services/score-increment.service';
 import { StatuesService } from 'src/app/services/statues/statues.service';
 import { Statue } from 'src/db';
 
@@ -13,11 +13,12 @@ export class WriterProfileComponent implements OnInit {
   statue: Statue;
   showingBio = true;
   showCongrats = false;
+
   constructor(
     protected router: Router,
     private route: ActivatedRoute,
     private statuesService: StatuesService,
-    private audioService: AudioService
+    private scoreIncrementService: ScoreIncrementService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -30,15 +31,12 @@ export class WriterProfileComponent implements OnInit {
     if (sessionStorage.getItem('showCongrats')) {
       this.showCongrats = true;
       sessionStorage.removeItem('showCongrats');
-
-      // Reproduz o som de moedas quando o diálogo é exibido
-      setTimeout(async () => {
-        await this.audioService.playCoinsSound();
-      }, 200);
     }
   }
 
   closeCongrats(): void {
+    // Dispara o incremento da score bar (que também toca o áudio)
+    this.scoreIncrementService.triggerIncrement();
     this.showCongrats = false;
   }
 
