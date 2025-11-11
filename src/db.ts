@@ -27,6 +27,7 @@ export interface Poem {
 
 export interface User {
   id: number;
+  googleUid?: string;
   firstAccess: boolean;
 }
 
@@ -49,6 +50,7 @@ export class AppDB extends Dexie {
 
     await db.user.add({
       id: 1,
+      googleUid: undefined,
       firstAccess: true,
     });
   }

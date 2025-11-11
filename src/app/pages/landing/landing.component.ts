@@ -30,17 +30,13 @@ export class LandingComponent {
     });
   }
 
-  handleCredentialResponse(response: any): void {
+  async handleCredentialResponse(response: any): Promise<void> {
     const token = response.credential;
     const payload = JSON.parse(atob(token.split('.')[1]));
 
-    console.log('Google UID:', payload.sub);
-    console.log('Nome:', payload.name);
-    console.log('Email:', payload.email);
-  }
-
-  async toFirstAccess(): Promise<void> {
+    await db.user.update(1, { googleUid: payload.sub });
     const user = await db.user.get(1);
+
     if (user?.firstAccess) {
       this.router.navigate(['/tutorial']);
       return;
