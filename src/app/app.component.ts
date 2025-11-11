@@ -18,6 +18,7 @@ export class AppComponent {
     if (user?.googleUid)
       gtag('config', 'G-39WWT3C14M', {
         user_id: user.googleUid,
+        send_page_view: true,
       });
   }
 }
