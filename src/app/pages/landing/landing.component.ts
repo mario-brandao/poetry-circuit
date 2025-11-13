@@ -54,9 +54,24 @@ export class LandingComponent implements AfterViewInit {
     }
   }
 
+  decodeJwt(token: string) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+
+    return JSON.parse(jsonPayload);
+  }
+
   async handleCredentialResponse(response: any): Promise<void> {
-    const token = response.credential;
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const credential = response.credential;
+    const payload = this.decodeJwt(credential);
+
     const uid = payload.sub;
 
     localStorage.setItem('googleUid', uid);

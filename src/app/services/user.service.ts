@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Firestore, updateDoc, writeBatch } from '@angular/fire/firestore';
+import { Router } from '@angular/router';
 import {
   collection,
   doc,
@@ -13,7 +14,7 @@ import {
   providedIn: 'root',
 })
 export class UserService {
-  constructor(private firestore: Firestore) {}
+  constructor(private firestore: Firestore, private router: Router) {}
 
   private getGoogleUid(): string {
     return localStorage.getItem('googleUid');
@@ -75,5 +76,12 @@ export class UserService {
     });
 
     await batch.commit();
+  }
+
+  logout(): void {
+    localStorage.removeItem('googleUid');
+    setTimeout(() => {
+      window.location.reload();
+    });
   }
 }

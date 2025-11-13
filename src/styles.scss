@@ -27,7 +27,7 @@ body.score-bar-visible:not(.ar-page) .overflow-y-auto {
 
 // Para elementos com altura fixa, ajusta a altura - não na página AR
 body.score-bar-visible:not(.ar-page) .h-screen {
-  height: calc(100vh - 30px);
+  height: 100vh;
 }
 
 // Classe para identificar página de realidade aumentada
