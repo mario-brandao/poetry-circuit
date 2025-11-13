@@ -18,7 +18,7 @@ export class AppComponent {
 
   async ngOnInit(): Promise<void> {
     const user = await this.userService.getUser();
-    if (user.exists()) {
+    if (user?.exists()) {
       await this.userService.syncStatuesProgress();
 
       gtag('config', 'G-39WWT3C14M', {

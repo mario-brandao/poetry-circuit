@@ -8,7 +8,7 @@ export const isAuthenticatedGuard: CanActivateFn = async (route, state) => {
 
   const user = await userService.getUser();
 
-  if (!user.exists()) {
+  if (!user?.exists()) {
     router.navigate(['/landing']);
     return false;
   }
