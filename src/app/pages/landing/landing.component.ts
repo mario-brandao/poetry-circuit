@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
+import { gtag } from 'src/app/gtag';
 import { db } from 'src/db';
 
 declare var google: any;
@@ -10,9 +11,9 @@ declare var google: any;
   styleUrls: ['./landing.component.scss'],
 })
 export class LandingComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private zone: NgZone) {}
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     window.onload = () => {
       this.initializeGoogleSignIn();
     };
@@ -37,11 +38,18 @@ export class LandingComponent {
     await db.user.update(1, { googleUid: payload.sub });
     const user = await db.user.get(1);
 
-    if (user?.firstAccess) {
-      this.router.navigate(['/tutorial']);
-      return;
-    }
-    this.router.navigate(['/home']);
+    gtag('config', 'G-39WWT3C14M', {
+      user_id: user.googleUid,
+    });
+
+    gtag('set', 'user_properties', {
+      uid_visible: `uid_${user.googleUid}`,
+    });
+
+    this.zone.run(() => {
+      if (user?.firstAccess) this.router.navigate(['/tutorial']);
+      else this.router.navigate(['/home']);
+    });
   }
 
   onGoogleLoginClicked(): void {}

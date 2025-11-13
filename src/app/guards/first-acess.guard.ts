@@ -6,7 +6,7 @@ export const firstAcessGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
   return db.user.get(1).then((user) => {
-    if (user?.firstAccess === false) {
+    if (user?.firstAccess === false && user?.googleUid) {
       return true;
     } else {
       router.navigate(['/landing']);

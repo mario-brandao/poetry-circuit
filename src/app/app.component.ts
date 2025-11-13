@@ -15,9 +15,15 @@ export class AppComponent {
 
   async ngOnInit(): Promise<void> {
     const user = await db.user.get(1);
-    if (user?.googleUid)
+    if (!user)
+      await db.user.add({ id: 1, googleUid: undefined, firstAccess: true });
+    else if (user?.googleUid) {
       gtag('config', 'G-39WWT3C14M', {
         user_id: user.googleUid,
       });
+      gtag('set', 'user_properties', {
+        uid_visible: `uid_${user.googleUid}`,
+      });
+    }
   }
 }
