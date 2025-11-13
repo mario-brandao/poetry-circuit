@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { gtag } from 'src/app/gtag';
-import { db } from 'src/db';
+import { UserService } from 'src/app/services/user.service';
 
 declare var google: any;
 
@@ -11,7 +11,11 @@ declare var google: any;
   styleUrls: ['./landing.component.scss'],
 })
 export class LandingComponent implements AfterViewInit {
-  constructor(private router: Router, private zone: NgZone) {}
+  constructor(
+    private router: Router,
+    private zone: NgZone,
+    private userService: UserService
+  ) {}
 
   ngAfterViewInit(): void {
     this.tryInitializeGoogleSignIn();
@@ -53,16 +57,22 @@ export class LandingComponent implements AfterViewInit {
   async handleCredentialResponse(response: any): Promise<void> {
     const token = response.credential;
     const payload = JSON.parse(atob(token.split('.')[1]));
+    const uid = payload.sub;
 
-    await db.user.update(1, { googleUid: payload.sub });
-    const user = await db.user.get(1);
+    localStorage.setItem('googleUid', uid);
 
-    gtag('config', 'G-39WWT3C14M', { user_id: user.googleUid });
-    gtag('set', 'user_properties', { uid_visible: `uid_${user.googleUid}` });
+    gtag('config', 'G-39WWT3C14M', { user_id: uid });
+    gtag('set', 'user_properties', { uid_visible: `uid_${uid}` });
 
-    this.zone.run(() => {
-      if (user?.firstAccess) this.router.navigate(['/tutorial']);
-      else this.router.navigate(['/home']);
-    });
+    const user = await this.userService.getUser();
+
+    if (!user.exists()) {
+      await this.userService.createUser();
+      await this.userService.syncStatuesProgress();
+      this.zone.run(() => this.router.navigate(['/tutorial']));
+    } else {
+      await this.userService.syncStatuesProgress();
+      this.zone.run(() => this.router.navigate(['/home']));
+    }
   }
 }

@@ -17,12 +17,11 @@ export class ScoreBarComponent implements OnDestroy {
 
   public animatedPoints = 0;
   private incrementing = false;
-  private lastTarget = 0;
 
   constructor(
-    private scoreService: ScoreService,
     private router: Router,
     private audioService: AudioService,
+    private scoreService: ScoreService,
     private scoreIncrementService: ScoreIncrementService
   ) {
     this.checkIfARPage();
@@ -42,10 +41,7 @@ export class ScoreBarComponent implements OnDestroy {
         } else {
           document.body.classList.remove('score-bar-visible');
         }
-        if (points < this.animatedPoints) {
-          this.animatedPoints = points;
-        }
-        this.lastTarget = points;
+        this.animatedPoints = points;
       })
     );
 

@@ -9,7 +9,7 @@
   >
     <app-statue-card
       class="flex justify-self-center"
-      *ngFor="let statue of (statues$ | async)?.slice(0, 2)"
+      *ngFor="let statue of statues"
       [statue]="statue"
     ></app-statue-card>
   </div>

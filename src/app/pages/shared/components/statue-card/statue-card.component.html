@@ -19,7 +19,7 @@
   <img
     class="h-[174px] object-cover object-left"
     [ngClass]="{ grayscale: !statue.visited }"
-    [src]="statue.cover"
+    [src]="getCover()"
   />
   <p class="text-[10px] text-white leading-[12.19px] mt-3 w-20">
     {{ statue.name | uppercase }}

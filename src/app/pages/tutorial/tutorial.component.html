@@ -1,6 +1,6 @@
-<section *ngIf="isFirstAccess !== null">
+<section>
   <svg
-    *ngIf="!isFirstAccess"
+    *ngIf="!user?.firstAccess"
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
@@ -30,7 +30,7 @@
         src="assets/images/tutorial/1.png"
         alt="Tutorial Slide 1"
         class="w-full h-[70%] object-contain"
-        [ngClass]="{ 'mb-[100px]': isFirstAccess === true }"
+        [ngClass]="{ 'mb-[100px]': user?.firstAccess }"
       />
     </swiper-slide>
     <swiper-slide class="flex items-center justify-center w-full h-full">
@@ -38,7 +38,7 @@
         src="assets/images/tutorial/2.png"
         alt="Tutorial Slide 2"
         class="w-full h-[70%] object-contain"
-        [ngClass]="{ 'mb-[100px]': isFirstAccess === true }"
+        [ngClass]="{ 'mb-[100px]': user?.firstAccess }"
       />
     </swiper-slide>
     <swiper-slide class="flex items-center justify-center w-full h-full">
@@ -46,7 +46,7 @@
         src="assets/images/tutorial/3.png"
         alt="Tutorial Slide 3"
         class="w-full h-[70%] object-contain"
-        [ngClass]="{ 'mb-[100px]': isFirstAccess === true }"
+        [ngClass]="{ 'mb-[100px]': user?.firstAccess }"
       />
     </swiper-slide>
     <swiper-slide class="flex items-center justify-center w-full h-full">
@@ -54,13 +54,13 @@
         src="assets/images/tutorial/4.png"
         alt="Tutorial Slide 4"
         class="w-full h-[70%] object-contain"
-        [ngClass]="{ 'mb-[100px]': isFirstAccess === true }"
+        [ngClass]="{ 'mb-[100px]': user?.firstAccess }"
       />
     </swiper-slide>
   </swiper-container>
   <div
     class="absolute bottom-[clamp(2%,8vh,30px)] w-full z-10 flex justify-center px-2 gap-4"
-    *ngIf="isFirstAccess"
+    *ngIf="user?.firstAccess"
   >
     <button
       *ngIf="currentIndex !== 3"

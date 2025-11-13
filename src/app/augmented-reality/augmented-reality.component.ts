@@ -2,15 +2,9 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs/internal/Subject';
 import { takeUntil } from 'rxjs/operators';
-import { Poem, Statue } from 'src/db';
-import { StatuesService } from '../services/statues/statues.service';
-
-interface Writer {
-  name: string;
-  normalizedName: string;
-  coordinates: { x: number; y: number };
-  poems: { title: string; normalizedTitle: string; visited: boolean }[];
-}
+import { StatuesService } from '../services/statues.service';
+import { Poem } from '../shared/interfaces/poem.interface';
+import { Statue } from '../shared/interfaces/statue.interface';
 
 @Component({
   selector: 'app-augmented-reality',
@@ -48,8 +42,10 @@ export class AugmentedRealityComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.$destroy))
       .subscribe(async (params) => {
         if (params.writer) {
-          this.selectedWriter =
-            await this.statuesService.getStatueByNormalizedName(params.writer);
+          this.selectedWriter = await this.statuesService.getStatueData(
+            params.writer
+          );
+          await this.statuesService.markStatueAsVisited(params.writer);
           this.setDefaultPoem();
         }
       });
@@ -80,6 +76,7 @@ export class AugmentedRealityComponent implements OnInit, OnDestroy {
     }
 
     this.activeButton = buttonNumber;
+
     this.statuesService.markPoemAsVisited(this.selectedWriter.id, buttonNumber);
     this.router.navigate(
       [this.selectedWriter.poems[buttonNumber].normalizedTitle],

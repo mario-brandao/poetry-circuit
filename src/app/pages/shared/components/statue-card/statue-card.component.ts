@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { Statue } from 'src/db';
+import { Statue } from 'src/app/shared/interfaces/statue.interface';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-statue-card',
@@ -8,4 +9,8 @@ import { Statue } from 'src/db';
 })
 export class StatueCardComponent {
   @Input() statue: Statue;
+
+  getCover(): string {
+    return `${environment.baseImgsUrl}/${this.statue.id}/cover.jpg`;
+  }
 }

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Statue } from 'src/db';
+import { Statue } from 'src/app/shared/interfaces/statue.interface';
 
 @Component({
   selector: 'app-statues',

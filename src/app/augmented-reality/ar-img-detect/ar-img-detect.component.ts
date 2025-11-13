@@ -11,7 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ScoreService } from 'src/app/services/score.service';
-import { StatuesService } from 'src/app/services/statues/statues.service';
+import { StatuesService } from 'src/app/services/statues.service';
 import { environment } from 'src/environments/environment';
 
 import {
@@ -112,16 +112,11 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     if (!this.scene) {
       return;
     }
-
     await this.clearAR();
     document.querySelector('video')?.remove();
-    const statue = await this.statuesService.getStatueByNormalizedName(
-      this.writer
-    );
-
     window.location.href = `${
       window.location.href.split('/augmented-reality')[0]
-    }/writer/${statue.id}`;
+    }/writer/${this.writer}`;
   }
 
   async start(writer: string, poem: string): Promise<void> {
@@ -303,16 +298,14 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
 
   private async handleStatuePoints(): Promise<void> {
     if (this.pointsAdded) {
-      return; // Se os pontos já foram adicionados, não adiciona novamente
+      return;
     }
 
-    const statue = await this.statuesService.getStatueByNormalizedName(
-      this.writer
-    );
+    const statue = await this.statuesService.getStatueData(this.writer);
     if (statue && !(await this.scoreService.hasStatuePoints(statue.id))) {
       await this.scoreService.addPoints(statue.id, 1000);
       sessionStorage.setItem('showCongrats', 'true');
-      this.pointsAdded = true; // Marca que os pontos foram adicionados
+      this.pointsAdded = true;
     }
   }
 
@@ -546,10 +539,6 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   }
 
   onBack(): void {
-    this.statuesService
-      .getStatueByNormalizedName(this.writer)
-      .then((statue) => {
-        this.router.navigate(['/writer', statue.id]);
-      });
+    this.router.navigate(['/writer', this.writer]);
   }
 }

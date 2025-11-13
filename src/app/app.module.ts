@@ -6,11 +6,14 @@ import { AppRoutingModule } from './app-routing.module';
 
 import { AppComponent } from './app.component';
 
+import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { GoogleMapsModule } from '@angular/google-maps';
 import {
   BrowserAnimationsModule,
   NoopAnimationsModule,
 } from '@angular/platform-browser/animations';
+import { environment } from 'src/environments/environment';
 import { AlbumComponent } from './pages/album/album.component';
 import { MapComponent } from './pages/home/components/map/map.component';
 import { StatuesComponent } from './pages/home/components/statues/statues.component';
@@ -48,6 +51,8 @@ register();
     BrowserAnimationsModule,
     NoopAnimationsModule,
     SharedModule,
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideFirestore(() => getFirestore()),
   ],
   providers: [],
   bootstrap: [AppComponent],

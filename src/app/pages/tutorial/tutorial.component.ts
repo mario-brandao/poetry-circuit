@@ -1,7 +1,8 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { NavigationTrackerService } from 'src/app/services/navigation-tracker/navigation-tracker.service';
-import { db } from 'src/db';
+import { NavigationTrackerService } from 'src/app/services/navigation-tracker.service';
+import { UserService } from 'src/app/services/user.service';
+import { User } from 'src/app/shared/interfaces/user.interface';
 import { SwiperContainer } from 'swiper/element';
 import { SwiperOptions } from 'swiper/types';
 
@@ -21,17 +22,19 @@ export class TutorialComponent implements OnInit {
   };
 
   currentIndex = 0;
-  isFirstAccess = null;
   previousRoute: string | null = null;
+
+  user: User;
 
   constructor(
     private router: Router,
-    private navTracker: NavigationTrackerService
+    private navTracker: NavigationTrackerService,
+    private userService: UserService
   ) {}
 
   async ngOnInit(): Promise<void> {
     this.previousRoute = this.navTracker.previousUrl;
-    this.isFirstAccess = (await db.user.get(1)).firstAccess;
+    this.user = <User>(await this.userService.getUser()).data();
   }
 
   slideChange(swiper: any): void {
@@ -52,9 +55,9 @@ export class TutorialComponent implements OnInit {
     }
   }
 
-  toHome(): void {
-    if (this.isFirstAccess) {
-      db.user.update(1, { firstAccess: false });
+  async toHome(): Promise<void> {
+    if (this.user.firstAccess) {
+      await this.userService.markIsNotFirstAccess();
     }
     this.router.navigate(['/home']);
   }

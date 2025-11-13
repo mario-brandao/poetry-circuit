@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { db } from 'src/db';
 import { gtag } from './gtag';
-import { NavigationTrackerService } from './services/navigation-tracker/navigation-tracker.service';
+import { NavigationTrackerService } from './services/navigation-tracker.service';
+import { UserService } from './services/user.service';
 
 @Component({
   selector: 'app-root',
@@ -11,18 +11,21 @@ import { NavigationTrackerService } from './services/navigation-tracker/navigati
 export class AppComponent {
   title = 'poetry-circuit';
 
-  constructor(protected navTracker: NavigationTrackerService) {}
+  constructor(
+    protected navTracker: NavigationTrackerService,
+    private userService: UserService
+  ) {}
 
   async ngOnInit(): Promise<void> {
-    const user = await db.user.get(1);
-    if (!user)
-      await db.user.add({ id: 1, googleUid: undefined, firstAccess: true });
-    else if (user?.googleUid) {
+    const user = await this.userService.getUser();
+    if (user.exists()) {
+      await this.userService.syncStatuesProgress();
+
       gtag('config', 'G-39WWT3C14M', {
-        user_id: user.googleUid,
+        user_id: user.id,
       });
       gtag('set', 'user_properties', {
-        uid_visible: `uid_${user.googleUid}`,
+        uid_visible: `uid_${user.id}`,
       });
     }
   }

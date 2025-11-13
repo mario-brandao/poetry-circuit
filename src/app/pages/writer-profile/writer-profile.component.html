@@ -40,7 +40,7 @@
         </button>
       </div>
     </div>
-    <app-pics-carousel [images]="statue?.images"></app-pics-carousel>
+    <app-pics-carousel *ngIf="statue" [statue]="statue"></app-pics-carousel>
     <div class="mt-6 p-2 text-white text-[10px]">
       <div class="flex justify-between" (click)="showingBio = !showingBio">
         <h3>BIOGRAFIA</h3>

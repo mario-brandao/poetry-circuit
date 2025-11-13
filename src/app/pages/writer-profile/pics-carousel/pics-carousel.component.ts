@@ -1,4 +1,6 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { Statue } from 'src/app/shared/interfaces/statue.interface';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-pics-carousel',
@@ -6,30 +8,35 @@ import { Component, Input, SimpleChanges } from '@angular/core';
   styleUrls: ['./pics-carousel.component.scss'],
 })
 export class PicsCarouselComponent {
-  @Input() images: { label: string; pic: string }[] = [];
+  @Input() statue: Statue;
 
+  images: string[] = [];
   currentImageIndex = 0;
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['images']) {
-      const swiperContainer = document.querySelector('swiper-container');
-      const swiperParams = {
-        effect: 'cards',
-        grabCursor: true,
-        speed: 500,
-        cardsEffect: {
-          rotate: false,
-        },
-        mousewheel: {
-          invert: false,
-        },
-        pagination: {
-          enabled: true,
-          dynamicBullets: true,
-          clickable: true,
-        },
-        injectStyles: [
-          `
+  ngOnInit(): void {
+    this.images = Array.from(
+      { length: this.statue.imgsAmount },
+      (_, i) => `${environment.baseImgsUrl}/${this.statue.id}/pics/${i + 1}.jpg`
+    );
+
+    const swiperContainer = document.querySelector('swiper-container');
+    const swiperParams = {
+      effect: 'cards',
+      grabCursor: true,
+      speed: 500,
+      cardsEffect: {
+        rotate: false,
+      },
+      mousewheel: {
+        invert: false,
+      },
+      pagination: {
+        enabled: true,
+        dynamicBullets: true,
+        clickable: true,
+      },
+      injectStyles: [
+        `
           .swiper-pagination {
             position: relative;
             top: 10px !important;
@@ -44,15 +51,12 @@ export class PicsCarouselComponent {
             background-color: #FF473A;
           }
           `,
-        ],
-      };
-      Object.assign(swiperContainer, swiperParams);
-      swiperContainer.initialize();
-      swiperContainer.addEventListener('slidechange', () => {
-        this.currentImageIndex = swiperContainer.swiper.activeIndex;
-      });
-    }
+      ],
+    };
+    Object.assign(swiperContainer, swiperParams);
+    swiperContainer.initialize();
+    swiperContainer.addEventListener('slidechange', () => {
+      this.currentImageIndex = swiperContainer.swiper.activeIndex;
+    });
   }
-
-  ngAfterViewInit(): void {}
 }

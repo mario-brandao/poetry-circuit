@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable } from 'dexie';
-import { StatuesService } from 'src/app/services/statues/statues.service';
-import { Statue } from 'src/db';
+import { StatuesService } from 'src/app/services/statues.service';
+import { Statue } from 'src/app/shared/interfaces/statue.interface';
 
 @Component({
   selector: 'app-album',
@@ -10,7 +9,7 @@ import { Statue } from 'src/db';
   styleUrls: ['./album.component.scss'],
 })
 export class AlbumComponent implements OnInit {
-  statues$: Observable<Statue[]>;
+  statues: Statue[];
 
   constructor(
     protected router: Router,
@@ -18,6 +17,13 @@ export class AlbumComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.statues$ = this.statuesService.statues$;
+    this.statuesService.getStatuesWithProgress$().subscribe((statues) => {
+      //======= TO CHANGE ========//
+      this.statues = statues.filter(
+        (statue) =>
+          statue.id === 'antonio-maria' || statue.id === 'ascenso-ferreira'
+      );
+      //======= ^^^^^^^^^^ ========//
+    });
   }
 }

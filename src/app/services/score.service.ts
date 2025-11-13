@@ -1,62 +1,73 @@
 import { Injectable } from '@angular/core';
-import Dexie, { Table } from 'dexie';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Firestore, doc, getDoc, setDoc } from '@angular/fire/firestore';
 
-export interface ScoreEntry {
-  statueId: number;
-  points: number;
-}
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
-export class ScoreService extends Dexie {
-  scoreEntries!: Table<ScoreEntry, number>;
-  userPoints!: Table<{ id: number; points: number }, number>;
-
+export class ScoreService {
   private pointsSubject = new BehaviorSubject<number>(0);
-  public points$: Observable<number> = this.pointsSubject.asObservable();
+  public points$ = this.pointsSubject.asObservable();
 
-  constructor() {
-    super('scoreDB');
-    this.version(1).stores({
-      scoreEntries: '++statueId',
-      userPoints: 'id',
-    });
-    this.initializePoints();
+  constructor(private firestore: Firestore) {
+    this.loadInitialPoints();
   }
 
-  private async initializePoints(): Promise<void> {
-    const points = await this.getPoints();
+  private getUid(): string | null {
+    return localStorage.getItem('googleUid');
+  }
+
+  /** 🔹 Carrega os pontos atuais na inicialização */
+  private async loadInitialPoints() {
+    const uid = this.getUid();
+    if (!uid) return;
+
+    const pointsRef = doc(this.firestore, `users/${uid}/meta/points`);
+    const snap = await getDoc(pointsRef);
+
+    const points = snap.exists() ? snap.data()['value'] : 0;
+
     this.pointsSubject.next(points);
   }
 
-  async addPoints(statueId: number, points: number): Promise<void> {
-    const already = await this.scoreEntries.get(statueId);
-    if (already) {
-      return;
-    }
+  async addPoints(statueId: string, points: number): Promise<void> {
+    const uid = this.getUid();
+    if (!uid) return;
 
-    await this.scoreEntries.add({ statueId, points });
-    const user = await this.userPoints.get(1);
-    if (user) {
-      const newPoints = user.points + points;
-      await this.userPoints.update(1, { points: newPoints });
-      this.pointsSubject.next(newPoints);
-    } else {
-      await this.userPoints.add({ id: 1, points });
-      this.pointsSubject.next(points);
-    }
+    const entryRef = doc(
+      this.firestore,
+      `users/${uid}/scoreEntries/${statueId}`
+    );
+    const entrySnap = await getDoc(entryRef);
+
+    if (entrySnap.exists()) return;
+
+    await setDoc(entryRef, { points });
+
+    const totalRef = doc(this.firestore, `users/${uid}/meta/points`);
+    const totalSnap = await getDoc(totalRef);
+
+    const newTotal =
+      (totalSnap.exists() ? totalSnap.data()['value'] : 0) + points;
+
+    await setDoc(totalRef, { value: newTotal });
+
+    this.pointsSubject.next(newTotal);
   }
 
-  async getPoints(): Promise<number> {
-    const user = await this.userPoints.get(1);
-    return user ? user.points : 0;
+  async hasStatuePoints(statueId: string): Promise<boolean> {
+    const uid = this.getUid();
+    if (!uid) return false;
+
+    const entryRef = doc(
+      this.firestore,
+      `users/${uid}/scoreEntries/${statueId}`
+    );
+    const snap = await getDoc(entryRef);
+
+    return snap.exists();
   }
 
-  async hasStatuePoints(statueId: number): Promise<boolean> {
-    return !!(await this.scoreEntries.get(statueId));
-  }
-
-  public get points(): number {
+  get points(): number {
     return this.pointsSubject.getValue();
   }
 }
