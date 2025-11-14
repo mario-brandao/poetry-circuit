@@ -1,6 +1,7 @@
 import {
   Component,
   ElementRef,
+  HostListener,
   NgZone,
   OnDestroy,
   OnInit,
@@ -105,18 +106,18 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
 
   // TODO: achar uma soluçao para identificar quando o usuario sai do site
   // esse blur event é detectado na confirmaçao pra abrir camera no celular de vlad
-  // (ios v? chorme v?) ...
-  // @HostListener('window:blur', ['$event'])
-  // async onWindowBlur(_): Promise<void> {
-  //   if (!this.scene) {
-  //     return;
-  //   }
-  //   await this.clearAR();
-  //   document.querySelector('video')?.remove();
-  //   window.location.href = `${
-  //     window.location.href.split('/augmented-reality')[0]
-  //   }/writer/${this.writer}`;
-  // }
+  //(ios v? chorme v?) ...
+  @HostListener('window:blur', ['$event'])
+  async onWindowBlur(_): Promise<void> {
+    if (!this.scene) {
+      return;
+    }
+    await this.clearAR();
+    document.querySelector('video')?.remove();
+    window.location.href = `${
+      window.location.href.split('/augmented-reality')[0]
+    }/writer/${this.writer}`;
+  }
 
   async start(writer: string, poem: string): Promise<void> {
     await this.resetViewParams(writer, poem);
