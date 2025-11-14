@@ -56,7 +56,10 @@ export class AugmentedRealityComponent implements OnInit, OnDestroy {
       this.router.navigate(['/home']);
     }
 
-    this.poemOptions = this.selectedWriter.poems;
+    this.poemOptions = this.selectedWriter.poems.map((poem, index) => ({
+      ...poem,
+      visited: this.selectedWriter.poemsVisited[index] ?? false,
+    }));
 
     if (this.poemOptions[0].visited && !this.poemOptions[1].visited) {
       this.openPoem(1);

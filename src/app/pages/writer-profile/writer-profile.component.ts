@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ScoreIncrementService } from 'src/app/services/score-increment.service';
+import { ScoreService } from 'src/app/services/score.service';
 import { StatuesService } from 'src/app/services/statues.service';
 import { Statue } from 'src/app/shared/interfaces/statue.interface';
 
@@ -18,7 +18,7 @@ export class WriterProfileComponent implements OnInit {
     protected router: Router,
     private route: ActivatedRoute,
     private statuesService: StatuesService,
-    private scoreIncrementService: ScoreIncrementService
+    private scoreService: ScoreService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -26,14 +26,18 @@ export class WriterProfileComponent implements OnInit {
       this.route.snapshot.params.id
     );
 
-    if (sessionStorage.getItem('showCongrats')) {
-      this.showCongrats = true;
-      sessionStorage.removeItem('showCongrats');
-    }
+    if (sessionStorage.getItem('showCongrats')) this.showCongrats = true;
+  }
+
+  ngOnDestroy(): void {
+    sessionStorage.removeItem('showCongrats');
   }
 
   closeCongrats(): void {
-    this.scoreIncrementService.triggerIncrement();
+    this.scoreService.onIncrementPoints$.next(
+      Number(sessionStorage.getItem('showCongrats').split(',')[1])
+    );
+    sessionStorage.removeItem('showCongrats');
     this.showCongrats = false;
   }
 

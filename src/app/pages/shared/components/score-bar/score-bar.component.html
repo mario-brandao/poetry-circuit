@@ -1,8 +1,6 @@
-<div *ngIf="points$ | async as points">
-  <div *ngIf="points > 0 && !isARPage" class="score-bar">
-    <span class="coin">
-      <app-coin-icon size="small"></app-coin-icon>
-    </span>
-    Pontos: {{ animatedPoints }}
-  </div>
+<div *ngIf="animatedPoints > 0 && !isARPage" class="score-bar">
+  <span class="coin">
+    <app-coin-icon size="small"></app-coin-icon>
+  </span>
+  Pontos: {{ animatedPoints }}
 </div>

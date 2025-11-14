@@ -8,8 +8,9 @@ export interface Statue {
   coordinates: string[];
   subtitle: string;
   rangeLife: string;
-  visited: boolean;
   bio: string;
   poems: Poem[];
   imgsAmount: number;
+  visited?: boolean;
+  poemsVisited?: boolean[];
 }

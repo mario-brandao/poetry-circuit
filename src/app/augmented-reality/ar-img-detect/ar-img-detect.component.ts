@@ -1,7 +1,6 @@
 import {
   Component,
   ElementRef,
-  HostListener,
   NgZone,
   OnDestroy,
   OnInit,
@@ -107,17 +106,17 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   // TODO: achar uma soluçao para identificar quando o usuario sai do site
   // esse blur event é detectado na confirmaçao pra abrir camera no celular de vlad
   // (ios v? chorme v?) ...
-  @HostListener('window:blur', ['$event'])
-  async onWindowBlur(_): Promise<void> {
-    if (!this.scene) {
-      return;
-    }
-    await this.clearAR();
-    document.querySelector('video')?.remove();
-    window.location.href = `${
-      window.location.href.split('/augmented-reality')[0]
-    }/writer/${this.writer}`;
-  }
+  // @HostListener('window:blur', ['$event'])
+  // async onWindowBlur(_): Promise<void> {
+  //   if (!this.scene) {
+  //     return;
+  //   }
+  //   await this.clearAR();
+  //   document.querySelector('video')?.remove();
+  //   window.location.href = `${
+  //     window.location.href.split('/augmented-reality')[0]
+  //   }/writer/${this.writer}`;
+  // }
 
   async start(writer: string, poem: string): Promise<void> {
     await this.resetViewParams(writer, poem);
@@ -161,45 +160,61 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     };
   }
 
+  private stopCamera(): void {
+    const video = document.querySelector('video') as HTMLVideoElement;
+    if (video && video.srcObject) {
+      const stream = video.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+      video.srcObject = null;
+    }
+    video?.remove();
+  }
+
   private async clearAR(): Promise<void> {
-    this.clearAnimations();
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
 
     if (this.audio) {
-      await this.audio.pause();
+      this.audio.pause();
+      this.audio.currentTime = 0;
+      this.audio.src = '';
+      this.audio.load();
     }
+
+    this.stopCamera();
+
     window.removeEventListener('resize', this.onResize);
-    this.arToolkitSource;
-    this.rendererContainer.nativeElement.innerHTML = '';
+
     if (this.renderer) {
       this.renderer.dispose();
       this.renderer.forceContextLoss();
-      this.renderer.domElement = null;
+      this.renderer.domElement?.remove();
       this.renderer = null;
     }
 
     if (this.scene) {
       this.scene.traverse((object: any) => {
-        if (object.geometry) {
-          object.geometry.dispose();
-        }
+        if (object.geometry) object.geometry.dispose();
+
         if (object.material) {
           if (Array.isArray(object.material)) {
-            object.material.forEach((material: any) => material.dispose());
+            object.material.forEach((m) => m.dispose());
           } else {
             object.material.dispose();
           }
         }
-        if (object.texture) {
-          object.texture.dispose();
-        }
+
+        if (object.texture) object.texture.dispose();
       });
 
       this.scene = null;
     }
 
-    if (this.camera) {
-      this.camera = null;
-    }
+    this.camera = null;
+    this.arToolkitContext = null;
+    this.arToolkitSource = null;
   }
 
   private initializeAR(): void {
@@ -303,8 +318,10 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
 
     const statue = await this.statuesService.getStatueData(this.writer);
     if (statue && !(await this.scoreService.hasStatuePoints(statue.id))) {
+      const oldPoints = await this.scoreService.getPoints();
       await this.scoreService.addPoints(statue.id, 1000);
-      sessionStorage.setItem('showCongrats', 'true');
+      const currentPoints = await this.scoreService.getPoints();
+      sessionStorage.setItem('showCongrats', `${oldPoints},${currentPoints}`);
       this.pointsAdded = true;
     }
   }
@@ -504,15 +521,15 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   }
 
   private onResize = (): void => {
-    this.arToolkitSource.onResizeElement();
+    this.arToolkitSource?.onResizeElement();
 
     if (this.renderer) {
-      this.arToolkitSource.copyElementSizeTo(this.renderer.domElement);
+      this.arToolkitSource?.copyElementSizeTo(this.renderer.domElement);
     }
 
-    if (this.arToolkitContext.arController !== null) {
-      this.arToolkitSource.copyElementSizeTo(
-        this.arToolkitContext.arController.canvas
+    if (this.arToolkitContext?.arController !== null) {
+      this.arToolkitSource?.copyElementSizeTo(
+        this.arToolkitContext?.arController.canvas
       );
     }
   };
@@ -538,7 +555,7 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     // this.logs.push(log);
   }
 
-  onBack(): void {
+  async onBack(): Promise<void> {
     this.router.navigate(['/writer', this.writer]);
   }
 }

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { environment } from 'src/environments/environment';
 import { gtag } from './gtag';
 import { NavigationTrackerService } from './services/navigation-tracker.service';
 import { UserService } from './services/user.service';
@@ -21,7 +22,7 @@ export class AppComponent {
     if (user?.exists()) {
       await this.userService.syncStatuesProgress();
 
-      gtag('config', 'G-39WWT3C14M', {
+      gtag('config', environment.firebase.measurementId, {
         user_id: user.id,
       });
       gtag('set', 'user_properties', {

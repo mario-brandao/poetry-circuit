@@ -1,32 +1,25 @@
 import { Injectable } from '@angular/core';
 import { Firestore, doc, getDoc, setDoc } from '@angular/fire/firestore';
-
-import { BehaviorSubject } from 'rxjs';
+import { Subject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ScoreService {
-  private pointsSubject = new BehaviorSubject<number>(0);
-  public points$ = this.pointsSubject.asObservable();
+  onIncrementPoints$: Subject<number> = new Subject();
 
-  constructor(private firestore: Firestore) {
-    this.loadInitialPoints();
-  }
+  constructor(private firestore: Firestore) {}
 
   private getUid(): string | null {
     return localStorage.getItem('googleUid');
   }
 
-  /** 🔹 Carrega os pontos atuais na inicialização */
-  private async loadInitialPoints() {
+  async getPoints(): Promise<number> {
     const uid = this.getUid();
     if (!uid) return;
 
     const pointsRef = doc(this.firestore, `users/${uid}/meta/points`);
     const snap = await getDoc(pointsRef);
 
-    const points = snap.exists() ? snap.data()['value'] : 0;
-
-    this.pointsSubject.next(points);
+    return snap.exists() ? snap.data()['value'] : 0;
   }
 
   async addPoints(statueId: string, points: number): Promise<void> {
@@ -50,8 +43,6 @@ export class ScoreService {
       (totalSnap.exists() ? totalSnap.data()['value'] : 0) + points;
 
     await setDoc(totalRef, { value: newTotal });
-
-    this.pointsSubject.next(newTotal);
   }
 
   async hasStatuePoints(statueId: string): Promise<boolean> {
@@ -65,9 +56,5 @@ export class ScoreService {
     const snap = await getDoc(entryRef);
 
     return snap.exists();
-  }
-
-  get points(): number {
-    return this.pointsSubject.getValue();
   }
 }

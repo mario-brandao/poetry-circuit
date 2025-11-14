@@ -2,7 +2,6 @@ import { Component, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 import { AudioService } from 'src/app/services/audio.service';
-import { ScoreIncrementService } from 'src/app/services/score-increment.service';
 import { ScoreService } from 'src/app/services/score.service';
 
 @Component({
@@ -11,7 +10,6 @@ import { ScoreService } from 'src/app/services/score.service';
   styleUrls: ['./score-bar.component.scss'],
 })
 export class ScoreBarComponent implements OnDestroy {
-  public points$ = this.scoreService.points$;
   private subscription: Subscription = new Subscription();
   public isARPage = false;
 
@@ -21,10 +19,20 @@ export class ScoreBarComponent implements OnDestroy {
   constructor(
     private router: Router,
     private audioService: AudioService,
-    private scoreService: ScoreService,
-    private scoreIncrementService: ScoreIncrementService
-  ) {
+    private scoreService: ScoreService
+  ) {}
+
+  async ngOnInit(): Promise<void> {
     this.checkIfARPage();
+    if (sessionStorage.getItem('showCongrats')) {
+      this.animatedPoints = Number(
+        sessionStorage.getItem('showCongrats').split(',')[0]
+      );
+    } else this.animatedPoints = await this.scoreService.getPoints();
+
+    if (this.animatedPoints > 0 && !this.isARPage)
+      document.body.classList.add('score-bar-visible');
+    else document.body.classList.remove('score-bar-visible');
 
     this.subscription.add(
       this.router.events
@@ -35,25 +43,8 @@ export class ScoreBarComponent implements OnDestroy {
     );
 
     this.subscription.add(
-      this.points$.subscribe((points) => {
-        if (points > 0 && !this.isARPage) {
-          document.body.classList.add('score-bar-visible');
-        } else {
-          document.body.classList.remove('score-bar-visible');
-        }
-        this.animatedPoints = points;
-      })
-    );
-
-    this.subscription.add(
-      this.scoreIncrementService.increment$.subscribe(() => {
-        this.points$
-          .subscribe((points) => {
-            if (points > this.animatedPoints) {
-              this.animatePoints(points);
-            }
-          })
-          .unsubscribe();
+      this.scoreService.onIncrementPoints$.subscribe((points) => {
+        this.animatePoints(points);
       })
     );
   }
