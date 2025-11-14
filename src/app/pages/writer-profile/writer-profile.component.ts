@@ -25,8 +25,10 @@ export class WriterProfileComponent implements OnInit {
     this.statue = await this.statuesService.getStatueData(
       this.route.snapshot.params.id
     );
-
-    if (sessionStorage.getItem('showCongrats')) this.showCongrats = true;
+    setTimeout(() => {
+      console.log(sessionStorage.getItem('showCongrats'));
+      if (sessionStorage.getItem('showCongrats')) this.showCongrats = true;
+    });
   }
 
   ngOnDestroy(): void {
