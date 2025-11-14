@@ -26,7 +26,6 @@ export class WriterProfileComponent implements OnInit {
       this.route.snapshot.params.id
     );
     setTimeout(() => {
-      console.log(sessionStorage.getItem('showCongrats'));
       if (sessionStorage.getItem('showCongrats')) this.showCongrats = true;
     });
   }
