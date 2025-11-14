@@ -24,14 +24,14 @@ export class ScoreBarComponent implements OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.checkIfARPage();
+
     if (sessionStorage.getItem('showCongrats')) {
       this.animatedPoints = Number(
         sessionStorage.getItem('showCongrats').split(',')[0]
       );
     } else this.animatedPoints = await this.scoreService.getPoints();
 
-    if (this.animatedPoints > 0 && !this.isARPage)
-      document.body.classList.add('score-bar-visible');
+    if (!this.isARPage) document.body.classList.add('score-bar-visible');
     else document.body.classList.remove('score-bar-visible');
 
     this.subscription.add(
