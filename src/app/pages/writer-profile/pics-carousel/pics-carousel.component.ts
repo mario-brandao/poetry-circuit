@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { gtag } from 'src/app/gtag';
 import { Statue } from 'src/app/shared/interfaces/statue.interface';
 import { environment } from 'src/environments/environment';
 
@@ -57,6 +58,10 @@ export class PicsCarouselComponent {
     swiperContainer.initialize();
     swiperContainer.addEventListener('slidechange', () => {
       this.currentImageIndex = swiperContainer.swiper.activeIndex;
+      gtag('event', 'slide_writer_pic', {
+        writer_id: this.statue.id,
+        send_to: environment.firebase.measurementId,
+      });
     });
   }
 }

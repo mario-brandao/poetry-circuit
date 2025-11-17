@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { gtag } from './gtag';
+import { IdleTimeService } from './services/idle-time.service';
 import { NavigationTrackerService } from './services/navigation-tracker.service';
+import { SessionResumeService } from './services/session-resume.service';
 import { UserService } from './services/user.service';
 
 @Component({
@@ -14,6 +16,8 @@ export class AppComponent {
 
   constructor(
     protected navTracker: NavigationTrackerService,
+    protected sessionResumeService: SessionResumeService,
+    private idleTimeService: IdleTimeService,
     private userService: UserService
   ) {}
 
@@ -29,5 +33,6 @@ export class AppComponent {
         uid_visible: `uid_${user.id}`,
       });
     }
+    this.idleTimeService.initialize();
   }
 }

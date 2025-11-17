@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { gtag } from 'src/app/gtag';
 import { ScoreService } from 'src/app/services/score.service';
 import { StatuesService } from 'src/app/services/statues.service';
 import { Statue } from 'src/app/shared/interfaces/statue.interface';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-writer-profile',
@@ -25,6 +27,12 @@ export class WriterProfileComponent implements OnInit {
     this.statue = await this.statuesService.getStatueData(
       this.route.snapshot.params.id
     );
+    if (!(await this.scoreService.hasStatuePoints(this.statue.id))) {
+      gtag('event', 'start_mission', {
+        writer_id: this.statue.id,
+        send_to: environment.firebase.measurementId,
+      });
+    }
     setTimeout(() => {
       if (sessionStorage.getItem('showCongrats')) this.showCongrats = true;
     });

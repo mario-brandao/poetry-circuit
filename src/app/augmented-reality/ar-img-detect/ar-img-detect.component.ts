@@ -10,10 +10,10 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { gtag } from 'src/app/gtag';
 import { ScoreService } from 'src/app/services/score.service';
 import { StatuesService } from 'src/app/services/statues.service';
 import { environment } from 'src/environments/environment';
-
 import {
   AmbientLight,
   AnimationClip,
@@ -324,6 +324,12 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       const currentPoints = await this.scoreService.getPoints();
       sessionStorage.setItem('showCongrats', `${oldPoints},${currentPoints}`);
       this.pointsAdded = true;
+
+      gtag('event', 'score_point', {
+        writer_id: this.writer,
+        event_time_msec: Date.now(),
+        send_to: environment.firebase.measurementId,
+      });
     }
   }
 
@@ -457,11 +463,56 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     this.mixer = null;
   }
 
+  private setupAudioAnalytics() {
+    if (!this.audio) return;
+
+    let sentComplete = false;
+
+    this.audio.addEventListener('play', () => {
+      gtag('event', 'audio_start', {
+        poem_id: this.poem,
+        writer_id: this.writer,
+        duration_ms: this.audio.duration * 1000 || null,
+        send_to: environment.firebase.measurementId,
+      });
+    });
+
+    this.audio.addEventListener('timeupdate', () => {
+      const p = this.audio.currentTime / this.audio.duration;
+
+      if (!sentComplete && p >= 0.97) {
+        sentComplete = true;
+
+        gtag('event', 'audio_complete', {
+          poem_id: this.poem,
+          writer_id: this.writer,
+          duration_ms: this.audio.duration * 1000 || null,
+          send_to: environment.firebase.measurementId,
+        });
+      }
+    });
+
+    this.audio.addEventListener('ended', () => {
+      if (!sentComplete) {
+        sentComplete = true;
+
+        gtag('event', 'audio_complete', {
+          poem_id: this.poem,
+          writer_id: this.writer,
+          duration_ms: this.audio.duration * 1000 || null,
+          send_to: environment.firebase.measurementId,
+        });
+      }
+    });
+  }
+
   private getAudio(): void {
     try {
       this.audio = new Audio(this.markerConfigurations.audioUrl);
       this.audio.loop = true;
       this.audio.volume = 1;
+
+      this.setupAudioAnalytics();
     } catch (error) {
       console.error('Erro ao carregar o áudio:', error);
       alert('Áudio não encontrado');

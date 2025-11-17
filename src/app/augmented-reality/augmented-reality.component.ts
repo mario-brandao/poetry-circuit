@@ -2,6 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs/internal/Subject';
 import { takeUntil } from 'rxjs/operators';
+import { environment } from 'src/environments/environment';
+import { gtag } from '../gtag';
 import { StatuesService } from '../services/statues.service';
 import { Poem } from '../shared/interfaces/poem.interface';
 import { Statue } from '../shared/interfaces/statue.interface';
@@ -45,6 +47,12 @@ export class AugmentedRealityComponent implements OnInit, OnDestroy {
           this.selectedWriter = await this.statuesService.getStatueData(
             params.writer
           );
+          if (this.selectedWriter.visited) {
+            gtag('event', 'statue_revisit', {
+              writer_id: this.selectedWriter.id,
+              send_to: environment.firebase.measurementId,
+            });
+          }
           await this.statuesService.markStatueAsVisited(params.writer);
           this.setDefaultPoem();
         }
