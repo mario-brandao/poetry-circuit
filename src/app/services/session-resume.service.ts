@@ -11,7 +11,7 @@ export class SessionResumeService implements OnDestroy {
   private STORAGE_KEY = 'pcdp_last_hidden_at';
   private THRESHOLD_MS = 5 * 60 * 1000;
 
-  constructor() {
+  initialize(): void {
     // visibilitychange
     this.subs.push(
       fromEvent(document, 'visibilitychange').subscribe(() =>

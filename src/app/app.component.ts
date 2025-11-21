@@ -1,9 +1,6 @@
 import { Component } from '@angular/core';
-import { environment } from 'src/environments/environment';
-import { gtag } from './gtag';
-import { IdleTimeService } from './services/idle-time.service';
+import { AnalyticsService } from './services/analytics.service';
 import { NavigationTrackerService } from './services/navigation-tracker.service';
-import { SessionResumeService } from './services/session-resume.service';
 import { UserService } from './services/user.service';
 
 @Component({
@@ -16,8 +13,7 @@ export class AppComponent {
 
   constructor(
     protected navTracker: NavigationTrackerService,
-    protected sessionResumeService: SessionResumeService,
-    private idleTimeService: IdleTimeService,
+    private analyticsService: AnalyticsService,
     private userService: UserService
   ) {}
 
@@ -25,14 +21,7 @@ export class AppComponent {
     const user = await this.userService.getUser();
     if (user?.exists()) {
       await this.userService.syncStatuesProgress();
-
-      gtag('config', environment.firebase.measurementId, {
-        user_id: user.id,
-      });
-      gtag('set', 'user_properties', {
-        uid_visible: `uid_${user.id}`,
-      });
+      this.analyticsService.start(user.id);
     }
-    this.idleTimeService.initialize();
   }
 }

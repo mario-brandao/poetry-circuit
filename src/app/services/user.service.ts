@@ -46,14 +46,36 @@ export class UserService {
     });
   }
 
+  async hasCompletedAllPoems(): Promise<boolean> {
+    const uid = this.getGoogleUid();
+    if (!uid) return false;
+
+    const progressSnap = await getDocs(
+      collection(this.firestore, `users/${uid}/progress`)
+    );
+
+    for (const docSnap of progressSnap.docs) {
+      const data = docSnap.data();
+      const poemsVisited: boolean[] = data['poemsVisited'] ?? [];
+
+      if (!poemsVisited.every((v) => v === true)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   async syncStatuesProgress(): Promise<void> {
     const uid = this.getGoogleUid();
 
     const writersSnap = await getDocs(collection(this.firestore, 'writers'));
-    const writers = writersSnap.docs.map((d) => ({
-      id: d.id,
-      poems: d.data()['poems'] || [],
-    }));
+    const writers = writersSnap.docs.map((d) => {
+      return {
+        id: d.id,
+        poemsLength: d.data()['poemsLength'] || 0,
+      };
+    });
 
     const progressSnap = await getDocs(
       collection(this.firestore, `users/${uid}/progress`)
@@ -69,7 +91,7 @@ export class UserService {
         );
         batch.set(progressRef, {
           visited: false,
-          poemsVisited: new Array(writer.poems.length).fill(false),
+          poemsVisited: new Array(writer.poemsLength).fill(false),
           updatedAt: new Date(),
         });
       }

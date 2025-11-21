@@ -1,8 +1,7 @@
 import { AfterViewInit, Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
-import { gtag } from 'src/app/gtag';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 import { UserService } from 'src/app/services/user.service';
-import { environment } from 'src/environments/environment';
 
 declare var google: any;
 
@@ -15,7 +14,8 @@ export class LandingComponent implements AfterViewInit {
   constructor(
     private router: Router,
     private zone: NgZone,
-    private userService: UserService
+    private userService: UserService,
+    private analyticsService: AnalyticsService
   ) {}
 
   ngAfterViewInit(): void {
@@ -77,17 +77,16 @@ export class LandingComponent implements AfterViewInit {
 
     localStorage.setItem('googleUid', uid);
 
-    gtag('config', environment.firebase.measurementId, { user_id: uid });
-    gtag('set', 'user_properties', { uid_visible: `uid_${uid}` });
-
     const user = await this.userService.getUser();
 
     if (!user.exists()) {
       await this.userService.createUser();
       await this.userService.syncStatuesProgress();
+      this.analyticsService.start(uid);
       this.zone.run(() => this.router.navigate(['/tutorial']));
     } else {
       await this.userService.syncStatuesProgress();
+      this.analyticsService.start(uid);
       this.zone.run(() => this.router.navigate(['/home']));
     }
   }
