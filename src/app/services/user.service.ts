@@ -29,10 +29,11 @@ export class UserService {
     return null;
   }
 
-  async createUser(): Promise<void> {
+  async createUser(email): Promise<void> {
     const uid = this.getGoogleUid();
     const userRef = doc(this.firestore, 'users', uid);
     await setDoc(userRef, {
+      email: email,
       firstAccess: true,
       createdAt: new Date(),
     });

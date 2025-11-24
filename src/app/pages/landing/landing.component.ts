@@ -74,13 +74,14 @@ export class LandingComponent implements AfterViewInit {
     const payload = this.decodeJwt(credential);
 
     const uid = payload.sub;
+    const email = payload.email;
 
     localStorage.setItem('googleUid', uid);
 
     const user = await this.userService.getUser();
 
     if (!user.exists()) {
-      await this.userService.createUser();
+      await this.userService.createUser(email);
       await this.userService.syncStatuesProgress();
       this.analyticsService.start(uid);
       this.zone.run(() => this.router.navigate(['/tutorial']));
