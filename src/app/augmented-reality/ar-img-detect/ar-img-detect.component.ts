@@ -1,18 +1,19 @@
 import {
   Component,
   ElementRef,
-  HostListener,
   NgZone,
   OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import html2canvas from 'html2canvas';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { gtag } from 'src/app/gtag';
 import { ScoreService } from 'src/app/services/score.service';
 import { StatuesService } from 'src/app/services/statues.service';
+import { Statue } from 'src/app/shared/interfaces/statue.interface';
 import { environment } from 'src/environments/environment';
 import {
   AmbientLight,
@@ -54,6 +55,8 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   @ViewChild('rendererContainer', { static: true })
   rendererContainer!: ElementRef;
 
+  protected statue: Statue;
+
   private scene!: Scene;
   private camera!: Camera;
   private renderer!: WebGLRenderer;
@@ -83,6 +86,8 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   private $destroy = new Subject<void>();
   private pointsAdded = false;
 
+  protected showButtons = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -104,23 +109,24 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     await this.clearAR();
   }
 
-  // TODO: achar uma soluçao para identificar quando o usuario sai do site
-  // esse blur event é detectado na confirmaçao pra abrir camera no celular de vlad
-  //(ios v? chorme v?) ...
-  @HostListener('window:blur', ['$event'])
-  async onWindowBlur(_): Promise<void> {
-    if (!this.scene) {
-      return;
-    }
-    await this.clearAR();
-    document.querySelector('video')?.remove();
-    window.location.href = `${
-      window.location.href.split('/augmented-reality')[0]
-    }/writer/${this.writer}`;
-  }
+  // // TODO: achar uma soluçao para identificar quando o usuario sai do site
+  // // esse blur event é detectado na confirmaçao pra abrir camera no celular de vlad
+  // //(ios v? chorme v?) ...
+  // @HostListener('window:blur', ['$event'])
+  // async onWindowBlur(_): Promise<void> {
+  //   if (!this.scene) {
+  //     return;
+  //   }
+  //   await this.clearAR();
+  //   document.querySelector('video')?.remove();
+  //   window.location.href = `${
+  //     window.location.href.split('/augmented-reality')[0]
+  //   }/writer/${this.writer}`;
+  // }
 
   async start(writer: string, poem: string): Promise<void> {
     await this.resetViewParams(writer, poem);
+    this.statue = await this.statuesService.getStatueData(this.writer);
     this.initializeAR();
   }
 
@@ -317,10 +323,12 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const statue = await this.statuesService.getStatueData(this.writer);
-    if (statue && !(await this.scoreService.hasStatuePoints(statue.id))) {
+    if (
+      this.statue &&
+      !(await this.scoreService.hasStatuePoints(this.statue.id))
+    ) {
       const oldPoints = await this.scoreService.getPoints();
-      await this.scoreService.addPoints(statue.id, 1000);
+      await this.scoreService.addPoints(this.statue.id, 1000);
       const currentPoints = await this.scoreService.getPoints();
       sessionStorage.setItem('showCongrats', `${oldPoints},${currentPoints}`);
       this.pointsAdded = true;
@@ -490,6 +498,12 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
           send_to: environment.firebase.measurementId,
         });
       }
+
+      if (p >= 0.5 && !this.showButtons) {
+        this.zone.run(() => {
+          this.showButtons = true;
+        });
+      }
     });
 
     this.audio.addEventListener('ended', () => {
@@ -605,6 +619,79 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
     // TODO: create flag for dev env only
     console.log(log);
     // this.logs.push(log);
+  }
+
+  async likeStatue(): Promise<void> {
+    if (!this.statue.liked) {
+      await this.statuesService.markStatueAsLiked(this.statue.id);
+      this.statue.liked = true;
+    }
+  }
+
+  async captureVideoFrame(video: HTMLVideoElement) {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    return canvas;
+  }
+
+  async captureFullScreenshot(rendererContainer: HTMLElement) {
+    const video = this.arToolkitSource?.domElement as HTMLVideoElement;
+    const videoCanvas = await this.captureVideoFrame(video);
+
+    const webglCanvas = rendererContainer.querySelector(
+      'canvas'
+    ) as HTMLCanvasElement;
+
+    const glImage = new Image();
+    glImage.src = webglCanvas.toDataURL('image/png');
+    await glImage.decode();
+
+    const ui = document.getElementById('ui-overlay') as HTMLElement;
+    const uiCanvas = await html2canvas(ui, {
+      backgroundColor: null,
+      scale: 2,
+    });
+
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = videoCanvas.width;
+    finalCanvas.height = videoCanvas.height;
+
+    const ctx = finalCanvas.getContext('2d');
+
+    ctx.drawImage(videoCanvas, 0, 0); // fundo da câmera
+    ctx.drawImage(glImage, 0, 0); // modelo 3D
+    ctx.drawImage(uiCanvas, 0, 0); // botões e UI
+
+    return finalCanvas.toDataURL('image/png');
+  }
+
+  async shareStatue(): Promise<void> {
+    if (!this.statue.shared) {
+      await this.statuesService.markStatueAsShared(this.statue.id);
+      this.statue.shared = true;
+    }
+
+    const dataUrl = await this.captureFullScreenshot(
+      this.rendererContainer.nativeElement
+    );
+
+    const blob = await (await fetch(dataUrl)).blob();
+    const file = new File([blob], 'screenshot.png', { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: 'Estou visitando o Circuito da Poesia!',
+        text: 'Veja isso!',
+        files: [file],
+      });
+    } else {
+      alert('Compartilhamento não suportado neste dispositivo.');
+    }
   }
 
   async onBack(): Promise<void> {

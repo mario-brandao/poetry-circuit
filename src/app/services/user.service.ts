@@ -91,6 +91,9 @@ export class UserService {
           `users/${uid}/progress/${writer.id}`
         );
         batch.set(progressRef, {
+          liked: false,
+          shared: false,
+          moreInfoClicked: false,
           visited: false,
           poemsVisited: new Array(writer.poemsLength).fill(false),
           updatedAt: new Date(),

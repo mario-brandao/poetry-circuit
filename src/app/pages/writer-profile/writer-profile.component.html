@@ -17,10 +17,10 @@
           {{ statue?.rangeLife | uppercase }}
         </p>
       </div>
-      <div>
+      <div class="flex flex-col items-end mt-5">
         <button
           type="button"
-          class="flex items-center justify-between focus:outline-none w-[130px] h-[39px] text-white bg-[#BD9717] hover:bg-yellow-500 text-xs px-2 py-1 mt-7"
+          class="flex items-center justify-between focus:outline-none w-[130px] h-[39px] text-white bg-[#BD9717] hover:bg-yellow-500 text-xs px-2 py-1"
           (click)="toAugmentedReality()"
         >
           <svg
@@ -37,6 +37,14 @@
             />
           </svg>
           LER QR CODE
+        </button>
+        <button
+          *ngIf="hasVisitedAnyPoems"
+          type="button"
+          class="flex items-center text-center justify-center focus:outline-none w-[100px] h-[39px] text-[#BD9717] border-[1px] border-solid border-[#BD9717] hover:bg-yellow-500 text-xs px-2 py-1 mt-2"
+          (click)="openMoreInfo()"
+        >
+          SAIBA MAIS
         </button>
       </div>
     </div>

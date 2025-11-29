@@ -7,7 +7,8 @@
 
 // AR/tailwind workaround
 body > video {
-  max-width: unset;
+  max-height: unset;
+  margin-left: 0px !important;
 }
 body {
   background: black;
@@ -34,3 +35,4 @@ body.score-bar-visible:not(.ar-page) .h-screen {
 .ar-page {
   /* Estilos específicos para AR se necessário */
 }
+

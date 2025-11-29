@@ -42,6 +42,10 @@ export class WriterProfileComponent implements OnInit {
     sessionStorage.removeItem('showCongrats');
   }
 
+  get hasVisitedAnyPoems(): boolean {
+    return this.statue?.poemsVisited.some((poem) => poem);
+  }
+
   closeCongrats(): void {
     this.scoreService.onIncrementPoints$.next(
       Number(sessionStorage.getItem('showCongrats').split(',')[1])
@@ -52,5 +56,13 @@ export class WriterProfileComponent implements OnInit {
 
   toAugmentedReality(): void {
     this.router.navigate(['/augmented-reality', this.statue.normalizedName]);
+  }
+
+  async openMoreInfo(): Promise<void> {
+    if (!this.statue.moreInfoClicked) {
+      await this.statuesService.markMoreInfoAsClicked(this.statue.id);
+      this.statue.moreInfoClicked = true;
+    }
+    window.open(this.statue.moreInfoUrl, '_blank');
   }
 }

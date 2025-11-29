@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { Subscription, filter } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 import { AudioService } from 'src/app/services/audio.service';
 import { ScoreService } from 'src/app/services/score.service';
 
@@ -35,17 +35,19 @@ export class ScoreBarComponent implements OnDestroy {
     else document.body.classList.remove('score-bar-visible');
 
     this.subscription.add(
+      this.scoreService.onIncrementPoints$.subscribe((points) => {
+        this.animatePoints(points);
+      })
+    );
+  }
+
+  ngAfterViewInit(): void {
+    this.subscription.add(
       this.router.events
         .pipe(filter((event) => event instanceof NavigationEnd))
         .subscribe(() => {
           this.checkIfARPage();
         })
-    );
-
-    this.subscription.add(
-      this.scoreService.onIncrementPoints$.subscribe((points) => {
-        this.animatePoints(points);
-      })
     );
   }
 

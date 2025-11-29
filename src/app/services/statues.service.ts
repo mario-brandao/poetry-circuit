@@ -119,6 +119,9 @@ export class StatuesService {
       ...statue,
       poems,
       visited: !!progressData.visited,
+      liked: progressData.liked,
+      shared: progressData.shared,
+      moreInfoClicked: progressData.moreInfoClicked,
       poemsVisited,
     };
   }
@@ -138,5 +141,32 @@ export class StatuesService {
     const { scale, rotation, position } = poem;
 
     return { scale, rotation, position };
+  }
+
+  async markStatueAsLiked(writerId: string): Promise<void> {
+    const uid = this.getGoogleUid();
+    const progressRef = doc(
+      this.firestore,
+      `users/${uid}/progress/${writerId}`
+    );
+    await setDoc(progressRef, { liked: true }, { merge: true });
+  }
+
+  async markStatueAsShared(writerId: string): Promise<void> {
+    const uid = this.getGoogleUid();
+    const progressRef = doc(
+      this.firestore,
+      `users/${uid}/progress/${writerId}`
+    );
+    await setDoc(progressRef, { shared: true }, { merge: true });
+  }
+
+  async markMoreInfoAsClicked(writerId: string): Promise<void> {
+    const uid = this.getGoogleUid();
+    const progressRef = doc(
+      this.firestore,
+      `users/${uid}/progress/${writerId}`
+    );
+    await setDoc(progressRef, { moreInfoClicked: true }, { merge: true });
   }
 }

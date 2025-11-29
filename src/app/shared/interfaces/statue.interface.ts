@@ -13,4 +13,8 @@ export interface Statue {
   imgsAmount: number;
   visited?: boolean;
   poemsVisited?: boolean[];
+  moreInfoUrl?: string;
+  liked?: boolean;
+  shared?: boolean;
+  moreInfoClicked?: boolean;
 }

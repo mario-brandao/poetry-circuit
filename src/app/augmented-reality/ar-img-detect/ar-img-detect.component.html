@@ -2,26 +2,118 @@
   <p *ngFor="let log of logs">{{ log }}</p>
 </div> -->
 
-<div #rendererContainer></div>
+<div id="ui-overlay">
+  <div #rendererContainer></div>
 
-<div *ngIf="playIconActive" (click)="play()" class="play-icon">
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="white"
-    width="50px"
-    height="50px"
-  >
-    <path d="M8 5v14l11-7z" />
-  </svg>
-</div>
+  <div *ngIf="playIconActive" (click)="play()" class="play-icon">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="white"
+      width="50px"
+      height="50px"
+    >
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  </div>
 
-<button class="back-button" (click)="onBack()">Voltar</button>
+  <button class="back-button" (click)="onBack()">Voltar</button>
 
-<!-- TODO: place back once models are coming from proper CDN -->
-<!-- <app-loading-overlay
+  <div *ngIf="true" class="flex flex-col fixed bottom-20 right-5 gap-2">
+    <button
+      class="p-3 flex items-center justify-between focus:outline-none w-[75px] h-[75px] rounded-full text-white border-solid border-[1px] border-[#BD9717] text-xs"
+      (click)="likeStatue()"
+    >
+      <svg
+        *ngIf="!statue?.liked"
+        viewBox="-2.4 -2.4 28.80 28.80"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        stroke="#000000"
+        stroke-width="0.00024000000000000003"
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke="#f35959"
+          stroke-width="1.9200000000000004"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M8.55284 3.00012C7.93598 3.00012 7.23841 3.06514 6.57209 3.29224C2.55494 4.60387 1.26341 8.894 2.39877 12.43L2.40354 12.4448L2.40877 12.4595C3.03435 14.2174 4.04226 15.8127 5.35336 17.1249L5.36091 17.1324L5.36862 17.1398C7.23782 18.9323 9.27254 20.4953 11.4756 21.8515L11.9934 22.1703L12.5147 21.8573C14.7226 20.5315 16.7964 18.9254 18.6432 17.1474L18.649 17.1419L18.6547 17.1362C19.9771 15.8215 20.9851 14.2144 21.6015 12.4549L21.6066 12.4402L21.6113 12.4253C22.7251 8.89703 21.4401 4.60176 17.4507 3.30948C16.7976 3.09221 16.1236 3.00012 15.4648 3.00012C13.9828 3.00011 12.8858 3.62064 12.0004 4.25309C11.1219 3.62545 10.0176 3.00012 8.55284 3.00012Z"
+          ></path>
+        </g>
+        <g id="SVGRepo_iconCarrier">
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M8.55284 3.00012C7.93598 3.00012 7.23841 3.06514 6.57209 3.29224C2.55494 4.60387 1.26341 8.894 2.39877 12.43L2.40354 12.4448L2.40877 12.4595C3.03435 14.2174 4.04226 15.8127 5.35336 17.1249L5.36091 17.1324L5.36862 17.1398C7.23782 18.9323 9.27254 20.4953 11.4756 21.8515L11.9934 22.1703L12.5147 21.8573C14.7226 20.5315 16.7964 18.9254 18.6432 17.1474L18.649 17.1419L18.6547 17.1362C19.9771 15.8215 20.9851 14.2144 21.6015 12.4549L21.6066 12.4402L21.6113 12.4253C22.7251 8.89703 21.4401 4.60176 17.4507 3.30948C16.7976 3.09221 16.1236 3.00012 15.4648 3.00012C13.9828 3.00011 12.8858 3.62064 12.0004 4.25309C11.1219 3.62545 10.0176 3.00012 8.55284 3.00012Z"
+          ></path>
+        </g>
+      </svg>
+      <svg
+        *ngIf="statue?.liked"
+        viewBox="-2.4 -2.4 28.80 28.80"
+        fill="#f35959"
+        xmlns="http://www.w3.org/2000/svg"
+        stroke="#000000"
+        stroke-width="0.00024000000000000003"
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke="#f35959"
+          stroke-width="1.9200000000000004"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M8.55284 3.00012C7.93598 3.00012 7.23841 3.06514 6.57209 3.29224C2.55494 4.60387 1.26341 8.894 2.39877 12.43L2.40354 12.4448L2.40877 12.4595C3.03435 14.2174 4.04226 15.8127 5.35336 17.1249L5.36091 17.1324L5.36862 17.1398C7.23782 18.9323 9.27254 20.4953 11.4756 21.8515L11.9934 22.1703L12.5147 21.8573C14.7226 20.5315 16.7964 18.9254 18.6432 17.1474L18.649 17.1419L18.6547 17.1362C19.9771 15.8215 20.9851 14.2144 21.6015 12.4549L21.6066 12.4402L21.6113 12.4253C22.7251 8.89703 21.4401 4.60176 17.4507 3.30948C16.7976 3.09221 16.1236 3.00012 15.4648 3.00012C13.9828 3.00011 12.8858 3.62064 12.0004 4.25309C11.1219 3.62545 10.0176 3.00012 8.55284 3.00012Z"
+          ></path>
+        </g>
+        <g id="SVGRepo_iconCarrier">
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M8.55284 3.00012C7.93598 3.00012 7.23841 3.06514 6.57209 3.29224C2.55494 4.60387 1.26341 8.894 2.39877 12.43L2.40354 12.4448L2.40877 12.4595C3.03435 14.2174 4.04226 15.8127 5.35336 17.1249L5.36091 17.1324L5.36862 17.1398C7.23782 18.9323 9.27254 20.4953 11.4756 21.8515L11.9934 22.1703L12.5147 21.8573C14.7226 20.5315 16.7964 18.9254 18.6432 17.1474L18.649 17.1419L18.6547 17.1362C19.9771 15.8215 20.9851 14.2144 21.6015 12.4549L21.6066 12.4402L21.6113 12.4253C22.7251 8.89703 21.4401 4.60176 17.4507 3.30948C16.7976 3.09221 16.1236 3.00012 15.4648 3.00012C13.9828 3.00011 12.8858 3.62064 12.0004 4.25309C11.1219 3.62545 10.0176 3.00012 8.55284 3.00012Z"
+          ></path>
+        </g>
+      </svg>
+    </button>
+    <button
+      class="p-5 flex items-center justify-between focus:outline-none w-[75px] h-[75px] rounded-full text-white border-solid border-[1px] border-[#BD9717] text-xs"
+      (click)="shareStatue()"
+    >
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></g>
+        <g id="SVGRepo_iconCarrier">
+          <path
+            d="M11 6C12.6569 6 14 4.65685 14 3C14 1.34315 12.6569 0 11 0C9.34315 0 8 1.34315 8 3C8 3.22371 8.02449 3.44169 8.07092 3.65143L4.86861 5.65287C4.35599 5.24423 3.70652 5 3 5C1.34315 5 0 6.34315 0 8C0 9.65685 1.34315 11 3 11C3.70652 11 4.35599 10.7558 4.86861 10.3471L8.07092 12.3486C8.02449 12.5583 8 12.7763 8 13C8 14.6569 9.34315 16 11 16C12.6569 16 14 14.6569 14 13C14 11.3431 12.6569 10 11 10C10.2935 10 9.644 10.2442 9.13139 10.6529L5.92908 8.65143C5.97551 8.44169 6 8.22371 6 8C6 7.77629 5.97551 7.55831 5.92908 7.34857L9.13139 5.34713C9.644 5.75577 10.2935 6 11 6Z"
+            fill="#ffffff"
+          ></path>
+        </g>
+      </svg>
+    </button>
+  </div>
+
+  <!-- TODO: place back once models are coming from proper CDN -->
+  <!-- <app-loading-overlay
   *ngIf="loading"
   [loaded]="loaded"
   [total]="total"
 ></app-loading-overlay> -->
-<app-loading-spinner *ngIf="loading" [loading]="loading"></app-loading-spinner>
+  <app-loading-spinner
+    *ngIf="loading"
+    [loading]="loading"
+  ></app-loading-spinner>
+</div>
