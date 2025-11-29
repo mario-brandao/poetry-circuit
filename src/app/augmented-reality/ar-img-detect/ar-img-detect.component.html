@@ -19,7 +19,10 @@
 
   <button class="back-button" (click)="onBack()">Voltar</button>
 
-  <div *ngIf="true" class="flex flex-col fixed bottom-20 right-5 gap-2">
+  <div
+    *ngIf="showButtons || statue?.visited"
+    class="flex flex-col fixed bottom-20 right-5 gap-2"
+  >
     <button
       class="p-3 flex items-center justify-between focus:outline-none w-[75px] h-[75px] rounded-full text-white border-solid border-[1px] border-[#BD9717] text-xs"
       (click)="likeStatue()"

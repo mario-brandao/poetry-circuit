@@ -12,6 +12,7 @@ import { ScoreService } from 'src/app/services/score.service';
 export class ScoreBarComponent implements OnDestroy {
   private subscription: Subscription = new Subscription();
   public isARPage = false;
+  public isLandingPage = false;
 
   public animatedPoints = 0;
   private incrementing = false;
@@ -23,7 +24,7 @@ export class ScoreBarComponent implements OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.checkIfARPage();
+    this.checkIfNotShowPage();
 
     if (sessionStorage.getItem('showCongrats')) {
       this.animatedPoints = Number(
@@ -46,15 +47,16 @@ export class ScoreBarComponent implements OnDestroy {
       this.router.events
         .pipe(filter((event) => event instanceof NavigationEnd))
         .subscribe(() => {
-          this.checkIfARPage();
+          this.checkIfNotShowPage();
         })
     );
   }
 
-  private checkIfARPage(): void {
+  private checkIfNotShowPage(): void {
     this.isARPage = this.router.url.includes('/augmented-reality');
+    this.isLandingPage = this.router.url.includes('/landing');
 
-    if (this.isARPage) {
+    if (this.isARPage || this.isLandingPage) {
       document.body.classList.add('ar-page');
     } else {
       document.body.classList.remove('ar-page');

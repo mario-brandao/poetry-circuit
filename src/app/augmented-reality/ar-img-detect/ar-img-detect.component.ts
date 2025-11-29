@@ -127,6 +127,13 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   async start(writer: string, poem: string): Promise<void> {
     await this.resetViewParams(writer, poem);
     this.statue = await this.statuesService.getStatueData(this.writer);
+    if (this.statue.visited) {
+      gtag('event', 'statue_revisit', {
+        writer_id: this.statue.id,
+        send_to: environment.firebase.measurementId,
+      });
+    }
+    await this.statuesService.markStatueAsVisited(this.statue.id);
     this.initializeAR();
   }
 
@@ -247,7 +254,11 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
       this.camera = new Camera();
       this.scene.add(this.camera);
 
-      this.renderer = new WebGLRenderer({ antialias: true, alpha: true });
+      this.renderer = new WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        preserveDrawingBuffer: true,
+      });
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.renderer.setClearColor(0xcccccc, 0);
       this.renderer.setPixelRatio(window.devicePixelRatio);
