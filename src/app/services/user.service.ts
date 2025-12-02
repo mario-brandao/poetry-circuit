@@ -95,6 +95,7 @@ export class UserService {
           shared: false,
           moreInfoClicked: false,
           visited: false,
+          isFirstReturn: true,
           poemsVisited: new Array(writer.poemsLength).fill(false),
           updatedAt: new Date(),
         });

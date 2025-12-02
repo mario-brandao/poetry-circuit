@@ -122,6 +122,7 @@ export class StatuesService {
       liked: progressData.liked,
       shared: progressData.shared,
       moreInfoClicked: progressData.moreInfoClicked,
+      isFirstReturn: progressData.isFirstReturn,
       poemsVisited,
     };
   }
@@ -168,5 +169,18 @@ export class StatuesService {
       `users/${uid}/progress/${writerId}`
     );
     await setDoc(progressRef, { moreInfoClicked: true }, { merge: true });
+  }
+
+  async updateIsFirstReturn(writerId: string, isFirstReturn): Promise<void> {
+    const uid = this.getGoogleUid();
+    const progressRef = doc(
+      this.firestore,
+      `users/${uid}/progress/${writerId}`
+    );
+    await setDoc(
+      progressRef,
+      { isFirstReturn: isFirstReturn },
+      { merge: true }
+    );
   }
 }

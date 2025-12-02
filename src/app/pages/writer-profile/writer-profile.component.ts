@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { gtag } from 'src/app/gtag';
+import { NavigationTrackerService } from 'src/app/services/navigation-tracker.service';
 import { ScoreService } from 'src/app/services/score.service';
 import { StatuesService } from 'src/app/services/statues.service';
 import { Statue } from 'src/app/shared/interfaces/statue.interface';
@@ -16,11 +17,14 @@ export class WriterProfileComponent implements OnInit {
   showingBio = true;
   showCongrats = false;
 
+  commingFromAR = false;
+
   constructor(
     protected router: Router,
     private route: ActivatedRoute,
     private statuesService: StatuesService,
-    private scoreService: ScoreService
+    private scoreService: ScoreService,
+    private navigationTrackerService: NavigationTrackerService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -36,10 +40,16 @@ export class WriterProfileComponent implements OnInit {
     setTimeout(() => {
       if (sessionStorage.getItem('showCongrats')) this.showCongrats = true;
     });
+    this.commingFromAR =
+      this.navigationTrackerService.previousUrl?.includes('augmented-reality');
   }
 
-  ngOnDestroy(): void {
+  async ngOnDestroy(): Promise<void> {
     sessionStorage.removeItem('showCongrats');
+    if (this.statue.isFirstReturn && this.commingFromAR) {
+      await this.statuesService.updateIsFirstReturn(this.statue.id, false);
+      this.statue.isFirstReturn = false;
+    }
   }
 
   get hasVisitedAnyPoems(): boolean {

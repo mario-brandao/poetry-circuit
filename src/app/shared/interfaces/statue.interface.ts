@@ -17,4 +17,5 @@ export interface Statue {
   liked?: boolean;
   shared?: boolean;
   moreInfoClicked?: boolean;
+  isFirstReturn?: boolean;
 }
