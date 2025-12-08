@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatest } from 'rxjs';
 import { gtag } from 'src/app/gtag';
 import { NavigationTrackerService } from 'src/app/services/navigation-tracker.service';
 import { ScoreService } from 'src/app/services/score.service';
 import { StatuesService } from 'src/app/services/statues.service';
+import { UserService } from 'src/app/services/user.service';
 import { Statue } from 'src/app/shared/interfaces/statue.interface';
 import { environment } from 'src/environments/environment';
 
@@ -19,10 +21,13 @@ export class WriterProfileComponent implements OnInit {
 
   commingFromAR = false;
 
+  showFormsAlert = false;
+
   constructor(
     protected router: Router,
     private route: ActivatedRoute,
     private statuesService: StatuesService,
+    private userService: UserService,
     private scoreService: ScoreService,
     private navigationTrackerService: NavigationTrackerService
   ) {}
@@ -31,6 +36,7 @@ export class WriterProfileComponent implements OnInit {
     this.statue = await this.statuesService.getStatueData(
       this.route.snapshot.params.id
     );
+
     if (!(await this.scoreService.hasStatuePoints(this.statue.id))) {
       gtag('event', 'start_mission', {
         writer_id: this.statue.id,
@@ -40,8 +46,24 @@ export class WriterProfileComponent implements OnInit {
     setTimeout(() => {
       if (sessionStorage.getItem('showCongrats')) this.showCongrats = true;
     });
+
     this.commingFromAR =
       this.navigationTrackerService.previousUrl?.includes('augmented-reality');
+
+    combineLatest([
+      this.statuesService.getStatuesWithProgress$(),
+      this.userService.getUser(),
+    ]).subscribe(([statuesProgress, user]) => {
+      //TO CHANGE
+      const selectedStatueProgress = statuesProgress.filter(
+        (s) => s.id === 'ascenso-ferreira' || s.id === 'antonio-maria'
+      );
+
+      this.showFormsAlert =
+        selectedStatueProgress.every((statue) => statue.visited) &&
+        user?.data()?.clickedToAnswerForms === false &&
+        this.commingFromAR;
+    });
   }
 
   async ngOnDestroy(): Promise<void> {
@@ -62,6 +84,12 @@ export class WriterProfileComponent implements OnInit {
     );
     sessionStorage.removeItem('showCongrats');
     this.showCongrats = false;
+  }
+
+  async toForms(): Promise<void> {
+    await this.userService.markClickedToAnswerForms();
+    this.showFormsAlert = false;
+    window.open('https://forms.gle/yBYwkcGiBUtnBqGs5', '_blank');
   }
 
   toAugmentedReality(): void {

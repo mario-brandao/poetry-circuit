@@ -35,6 +35,7 @@ export class UserService {
     await setDoc(userRef, {
       email: email,
       firstAccess: true,
+      clickedToAnswerForms: false,
       createdAt: new Date(),
     });
   }
@@ -44,6 +45,14 @@ export class UserService {
     const userRef = doc(this.firestore, 'users', uid);
     await updateDoc(userRef, {
       firstAccess: false,
+    });
+  }
+
+  async markClickedToAnswerForms(): Promise<void> {
+    const uid = this.getGoogleUid();
+    const userRef = doc(this.firestore, 'users', uid);
+    await updateDoc(userRef, {
+      clickedToAnswerForms: true,
     });
   }
 

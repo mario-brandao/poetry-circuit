@@ -102,3 +102,23 @@
     <button (click)="closeCongrats()">Fechar</button>
   </div>
 </dialog>
+
+<dialog *ngIf="showFormsAlert" open class="congrats-dialog">
+  <div class="congrats-content">
+    <h2>Agradecemos sua participação</h2>
+    <p>
+      Gostaria de responder um rápido questionário e nos contar como foi sua
+      experiência?<br />
+      <b>Dura menos de 5 minutos!</b>
+    </p>
+    <div class="gap-2 flex flex-col justify-center">
+      <button (click)="toForms()">Vamos lá!</button>
+      <button
+        class="!bg-transparent !text-white"
+        (click)="showFormsAlert = false"
+      >
+        Deixa pra próxima
+      </button>
+    </div>
+  </div>
+</dialog>
