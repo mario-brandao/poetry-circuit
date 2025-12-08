@@ -86,8 +86,6 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
   private $destroy = new Subject<void>();
   private pointsAdded = false;
 
-  protected showButtons = false;
-
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -507,12 +505,6 @@ export class ArImgDetectComponent implements OnInit, OnDestroy {
           writer_id: this.writer,
           duration_ms: this.audio.duration * 1000 || null,
           send_to: environment.firebase.measurementId,
-        });
-      }
-
-      if (p >= 0.5 && !this.showButtons) {
-        this.zone.run(() => {
-          this.showButtons = true;
         });
       }
     });
